@@ -5,6 +5,10 @@ export async function GET() {
     status: 'online',
     name: 'Spa Management API Backend',
     version: '1.0.0',
+    documentation: {
+      swaggerUI: '/docs',
+      openApiJson: '/api/openapi',
+    },
     architecture: {
       pattern: 'Clean Architecture (Modular + SOLID)',
       layers: ['domain', 'application', 'infrastructure', 'presentation'],

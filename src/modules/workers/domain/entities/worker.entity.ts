@@ -6,6 +6,8 @@ export interface WorkerProps {
   firstName: string;
   lastName: string;
   email?: string | null;
+  passwordHash?: string | null;
+  role?: string;
   phone: string;
   specialty?: string | null;
   commissionPercentage?: number;
@@ -20,6 +22,8 @@ export class Worker {
   private _firstName: string;
   private _lastName: string;
   private _email?: string | null;
+  private _passwordHash?: string | null;
+  private _role: string;
   private _phone: string;
   private _specialty?: string | null;
   private _commissionPercentage: number;
@@ -33,6 +37,8 @@ export class Worker {
     this._firstName = props.firstName;
     this._lastName = props.lastName;
     this._email = props.email ?? null;
+    this._passwordHash = props.passwordHash ?? null;
+    this._role = props.role ?? 'WORKER';
     this._phone = props.phone;
     this._specialty = props.specialty ?? null;
     this._commissionPercentage = props.commissionPercentage ?? 0;
@@ -78,6 +84,12 @@ export class Worker {
   public get email(): string | null | undefined {
     return this._email;
   }
+  public get passwordHash(): string | null | undefined {
+    return this._passwordHash;
+  }
+  public get role(): string {
+    return this._role;
+  }
   public get phone(): string {
     return this._phone;
   }
@@ -111,6 +123,8 @@ export class Worker {
       this._lastName = props.lastName;
     }
     if (props.email !== undefined) this._email = props.email;
+    if (props.passwordHash !== undefined) this._passwordHash = props.passwordHash;
+    if (props.role !== undefined) this._role = props.role;
     if (props.phone !== undefined) {
       if (!props.phone || props.phone.trim().length === 0) {
         throw new BadRequestError('El teléfono de la trabajadora no puede estar vacío.');

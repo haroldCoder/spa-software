@@ -3,7 +3,8 @@ import { IBusinessRepository } from '@/src/modules/business/domain/repositories/
 import { Worker } from '../../domain/entities/worker.entity';
 import { CreateWorkerDTO } from '../dtos/worker.dto';
 import { Result } from '@/src/shared/domain/result';
-import { NotFoundError, DomainError, BadRequestError } from '@/src/shared/domain/errors';
+import { NotFoundError, ConflictError, DomainError, BadRequestError } from '@/src/shared/domain/errors';
+import bcrypt from 'bcryptjs';
 
 export class CreateWorkerUseCase {
   constructor(
@@ -18,11 +19,25 @@ export class CreateWorkerUseCase {
         return Result.fail(new NotFoundError('Negocio', dto.businessId));
       }
 
+      if (dto.email) {
+        const existingWithEmail = await this.workerRepository.findByEmail(dto.email);
+        if (existingWithEmail) {
+          return Result.fail(new ConflictError(`Ya existe una trabajadora registrada con el email '${dto.email}'.`));
+        }
+      }
+
+      let passwordHash: string | null = null;
+      if (dto.password) {
+        passwordHash = await bcrypt.hash(dto.password, 10);
+      }
+
       const worker = Worker.create({
         businessId: dto.businessId,
         firstName: dto.firstName,
         lastName: dto.lastName,
         email: dto.email,
+        passwordHash,
+        role: 'WORKER',
         phone: dto.phone,
         specialty: dto.specialty,
         commissionPercentage: dto.commissionPercentage,
@@ -37,3 +52,4 @@ export class CreateWorkerUseCase {
     }
   }
 }
+

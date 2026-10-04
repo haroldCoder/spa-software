@@ -7,6 +7,8 @@ export interface SupabaseBusinessRow {
   legal_name: string | null;
   tax_id: string | null;
   email: string;
+  password_hash?: string | null;
+  role?: string;
   phone: string | null;
   address: string | null;
   city: string | null;
@@ -25,6 +27,8 @@ export class BusinessMapper {
       legalName: row.legal_name,
       taxId: row.tax_id,
       email: row.email,
+      passwordHash: row.password_hash ?? null,
+      role: row.role ?? 'BUSINESS_OWNER',
       phone: row.phone,
       address: row.address,
       city: row.city,
@@ -49,6 +53,12 @@ export class BusinessMapper {
       currency: entity.currency,
       is_active: entity.isActive,
     };
+    if (entity.passwordHash !== undefined) {
+      data.password_hash = entity.passwordHash;
+    }
+    if (entity.role !== undefined) {
+      data.role = entity.role;
+    }
     if (entity.id) {
       data.id = entity.id;
     }
@@ -62,6 +72,7 @@ export class BusinessMapper {
       legalName: entity.legalName ?? null,
       taxId: entity.taxId ?? null,
       email: entity.email,
+      role: entity.role,
       phone: entity.phone ?? null,
       address: entity.address ?? null,
       city: entity.city ?? null,

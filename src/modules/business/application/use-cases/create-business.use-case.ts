@@ -14,11 +14,19 @@ export class CreateBusinessUseCase {
         return Result.fail(new ConflictError(`Ya existe un negocio registrado con el email '${dto.email}'.`));
       }
 
+      let passwordHash: string | null = null;
+      if (dto.password) {
+        const bcrypt = await import('bcryptjs');
+        passwordHash = await bcrypt.default.hash(dto.password, 10);
+      }
+
       const business = Business.create({
         name: dto.name,
         legalName: dto.legalName,
         taxId: dto.taxId,
         email: dto.email,
+        passwordHash,
+        role: 'BUSINESS_OWNER',
         phone: dto.phone,
         address: dto.address,
         city: dto.city,

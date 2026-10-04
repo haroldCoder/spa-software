@@ -36,6 +36,22 @@ export class ConflictError extends DomainError {
   }
 }
 
+export class UnauthorizedError extends DomainError {
+  public readonly statusCode = 401;
+
+  constructor(message = 'No autorizado o credenciales inválidas.') {
+    super(message);
+  }
+}
+
+export class ForbiddenError extends DomainError {
+  public readonly statusCode = 403;
+
+  constructor(message = 'Acceso denegado. No tienes los permisos necesarios.') {
+    super(message);
+  }
+}
+
 export class DatabaseError extends DomainError {
   public readonly statusCode = 500;
   public readonly originalError?: unknown;
@@ -45,3 +61,4 @@ export class DatabaseError extends DomainError {
     this.originalError = originalError;
   }
 }
+

@@ -5,6 +5,7 @@ export const CreateBusinessSchema = z.object({
   legalName: z.string().optional().nullable(),
   taxId: z.string().optional().nullable(),
   email: z.string().email('Debe ser un correo electrónico válido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').optional(),
   phone: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
@@ -25,6 +26,7 @@ export interface BusinessResponseDTO {
   legalName: string | null;
   taxId: string | null;
   email: string;
+  role: string;
   phone: string | null;
   address: string | null;
   city: string | null;
@@ -34,3 +36,4 @@ export interface BusinessResponseDTO {
   createdAt: string;
   updatedAt: string;
 }
+

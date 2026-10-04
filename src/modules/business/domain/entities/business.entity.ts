@@ -6,6 +6,8 @@ export interface BusinessProps {
   legalName?: string | null;
   taxId?: string | null;
   email: string;
+  passwordHash?: string | null;
+  role?: string;
   phone?: string | null;
   address?: string | null;
   city?: string | null;
@@ -22,6 +24,8 @@ export class Business {
   private _legalName?: string | null;
   private _taxId?: string | null;
   private _email: string;
+  private _passwordHash?: string | null;
+  private _role: string;
   private _phone?: string | null;
   private _address?: string | null;
   private _city?: string | null;
@@ -37,6 +41,8 @@ export class Business {
     this._legalName = props.legalName ?? null;
     this._taxId = props.taxId ?? null;
     this._email = props.email;
+    this._passwordHash = props.passwordHash ?? null;
+    this._role = props.role ?? 'BUSINESS_OWNER';
     this._phone = props.phone ?? null;
     this._address = props.address ?? null;
     this._city = props.city ?? null;
@@ -71,6 +77,12 @@ export class Business {
   }
   public get email(): string {
     return this._email;
+  }
+  public get passwordHash(): string | null | undefined {
+    return this._passwordHash;
+  }
+  public get role(): string {
+    return this._role;
   }
   public get phone(): string | null | undefined {
     return this._phone;
@@ -112,6 +124,8 @@ export class Business {
       }
       this._email = props.email;
     }
+    if (props.passwordHash !== undefined) this._passwordHash = props.passwordHash;
+    if (props.role !== undefined) this._role = props.role;
     if (props.phone !== undefined) this._phone = props.phone;
     if (props.address !== undefined) this._address = props.address;
     if (props.city !== undefined) this._city = props.city;
@@ -121,3 +135,4 @@ export class Business {
     this._updatedAt = new Date();
   }
 }
+

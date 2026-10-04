@@ -5,6 +5,7 @@ export const CreateWorkerSchema = z.object({
   firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   lastName: z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),
   email: z.string().email('Debe ser un correo electrónico válido').optional().nullable(),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').optional(),
   phone: z.string().min(7, 'El teléfono debe tener al menos 7 caracteres'),
   specialty: z.string().optional().nullable(),
   commissionPercentage: z.number().min(0).max(100).default(0),
@@ -24,6 +25,7 @@ export interface WorkerResponseDTO {
   lastName: string;
   fullName: string;
   email: string | null;
+  role: string;
   phone: string;
   specialty: string | null;
   commissionPercentage: number;
@@ -31,3 +33,4 @@ export interface WorkerResponseDTO {
   createdAt: string;
   updatedAt: string;
 }
+

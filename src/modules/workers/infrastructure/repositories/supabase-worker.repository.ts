@@ -24,6 +24,22 @@ export class SupabaseWorkerRepository implements IWorkerRepository {
     return WorkerMapper.toDomain(data as SupabaseWorkerRow);
   }
 
+  public async findByEmail(email: string): Promise<Worker | null> {
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (error) {
+      throw new DatabaseError(`Error al consultar trabajadora por email ${email}: ${error.message}`, error);
+    }
+
+    if (!data) return null;
+    return WorkerMapper.toDomain(data as SupabaseWorkerRow);
+  }
+
+
   public async findByBusinessId(businessId: string, filter?: { isActive?: boolean }): Promise<Worker[]> {
     let query = this.client
       .from(this.tableName)

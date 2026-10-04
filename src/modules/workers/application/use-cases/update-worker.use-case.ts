@@ -3,6 +3,7 @@ import { Worker } from '../../domain/entities/worker.entity';
 import { UpdateWorkerDTO } from '../dtos/worker.dto';
 import { Result } from '@/src/shared/domain/result';
 import { NotFoundError, DomainError, BadRequestError } from '@/src/shared/domain/errors';
+import bcrypt from 'bcryptjs';
 
 export class UpdateWorkerUseCase {
   constructor(private readonly workerRepository: IWorkerRepository) {}
@@ -14,7 +15,12 @@ export class UpdateWorkerUseCase {
         return Result.fail(new NotFoundError('Trabajadora', id));
       }
 
-      worker.update(dto);
+      const updateData: Partial<Parameters<typeof worker.update>[0]> = { ...dto };
+      if (dto.password) {
+        updateData.passwordHash = await bcrypt.hash(dto.password, 10);
+      }
+
+      worker.update(updateData);
       const updated = await this.workerRepository.update(worker);
       return Result.ok(updated);
     } catch (error) {
@@ -23,3 +29,4 @@ export class UpdateWorkerUseCase {
     }
   }
 }
+

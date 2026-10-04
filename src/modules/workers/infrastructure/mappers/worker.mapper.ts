@@ -7,6 +7,8 @@ export interface SupabaseWorkerRow {
   first_name: string;
   last_name: string;
   email: string | null;
+  password_hash?: string | null;
+  role?: string;
   phone: string;
   specialty: string | null;
   commission_percentage: number | string;
@@ -23,6 +25,8 @@ export class WorkerMapper {
       firstName: row.first_name,
       lastName: row.last_name,
       email: row.email,
+      passwordHash: row.password_hash ?? null,
+      role: row.role ?? 'WORKER',
       phone: row.phone,
       specialty: row.specialty,
       commissionPercentage: Number(row.commission_percentage || 0),
@@ -43,6 +47,12 @@ export class WorkerMapper {
       commission_percentage: entity.commissionPercentage,
       is_active: entity.isActive,
     };
+    if (entity.passwordHash !== undefined) {
+      data.password_hash = entity.passwordHash;
+    }
+    if (entity.role !== undefined) {
+      data.role = entity.role;
+    }
     if (entity.id) {
       data.id = entity.id;
     }
@@ -57,6 +67,7 @@ export class WorkerMapper {
       lastName: entity.lastName,
       fullName: entity.fullName,
       email: entity.email ?? null,
+      role: entity.role,
       phone: entity.phone,
       specialty: entity.specialty ?? null,
       commissionPercentage: entity.commissionPercentage,

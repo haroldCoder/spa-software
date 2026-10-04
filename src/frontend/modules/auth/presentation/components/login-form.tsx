@@ -79,6 +79,15 @@ export function LoginForm({ userType }: LoginFormProps) {
         </div>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/dashboard">
+            <Button
+              size="sm"
+              className="w-full sm:w-auto gap-2 shadow-md shadow-spa-rose/25"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>Ir a mi Panel de Control</span>
+            </Button>
+          </Link>
           <Button
             onClick={() => {
               reset();
@@ -88,14 +97,6 @@ export function LoginForm({ userType }: LoginFormProps) {
             size="sm"
           >
             Cambiar de cuenta
-          </Button>
-          <Button
-            onClick={() => window.location.href = '/docs'}
-            size="sm"
-            className="gap-2"
-          >
-            <Sparkles className="h-4 w-4" />
-            Explorar Servicios API
           </Button>
         </div>
       </div>

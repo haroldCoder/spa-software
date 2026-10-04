@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { useRegisterBusiness } from '../../application/use-register-business';
 import { RegisterBusinessFormValues } from '../../domain/auth.types';
 import { Button } from '@/src/components/ui/button';
@@ -77,6 +78,15 @@ export function RegisterBusinessForm() {
         </div>
 
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/dashboard">
+            <Button
+              size="sm"
+              className="w-full sm:w-auto gap-2 shadow-md shadow-spa-rose/25"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>Ir a mi Panel de Control</span>
+            </Button>
+          </Link>
           <Button
             onClick={() => {
               reset();
@@ -98,14 +108,6 @@ export function RegisterBusinessForm() {
             size="sm"
           >
             Registrar otro negocio
-          </Button>
-          <Button
-            onClick={() => window.location.href = '/docs'}
-            size="sm"
-            className="gap-2"
-          >
-            <Sparkles className="h-4 w-4" />
-            Explorar API
           </Button>
         </div>
       </div>

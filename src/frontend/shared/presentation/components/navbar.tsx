@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Menu, X, BookOpen, UserPlus, LogIn } from 'lucide-react';
+import { Sparkles, Menu, X, BookOpen, UserPlus, LogIn, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
 
@@ -13,6 +13,7 @@ export function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Inicio' },
+    { href: '/dashboard', label: 'Panel del Spa', icon: LayoutDashboard },
     { href: '/docs', label: 'Documentación API', icon: BookOpen },
   ];
 

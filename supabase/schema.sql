@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS businesses (
     name VARCHAR(255) NOT NULL,
     legal_name VARCHAR(255),
     tax_id VARCHAR(50),
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255),
+    role VARCHAR(50) NOT NULL DEFAULT 'BUSINESS_OWNER',
     phone VARCHAR(50),
     address TEXT,
     city VARCHAR(100),
@@ -29,6 +31,8 @@ CREATE TABLE IF NOT EXISTS workers (
     first_name VARCHAR(150) NOT NULL,
     last_name VARCHAR(150) NOT NULL,
     email VARCHAR(255),
+    password_hash VARCHAR(255),
+    role VARCHAR(50) NOT NULL DEFAULT 'WORKER',
     phone VARCHAR(50) NOT NULL,
     specialty VARCHAR(150), -- e.g. 'Masoterapeuta', 'Cosmiatra', 'Manicurista'
     commission_percentage NUMERIC(5, 2) DEFAULT 0.00, -- e.g. 30.00%
@@ -36,6 +40,7 @@ CREATE TABLE IF NOT EXISTS workers (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 
 -- 3. CLIENTS / CLIENTES
 CREATE TABLE IF NOT EXISTS clients (
@@ -78,12 +83,34 @@ CREATE TABLE IF NOT EXISTS catalog_items (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 5. AUTH SESSIONS (JWT & Multi-device Session Management)
+CREATE TABLE IF NOT EXISTS auth_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL, -- references businesses(id) or workers(id)
+    user_type VARCHAR(50) NOT NULL, -- 'BUSINESS' or 'WORKER'
+    business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    session_token VARCHAR(255) NOT NULL UNIQUE,
+    refresh_token VARCHAR(255) UNIQUE,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    expires_at TIMESTAMPTZ NOT NULL,
+    is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- INDEXES FOR FAST QUERYING
 CREATE INDEX IF NOT EXISTS idx_workers_business_id ON workers(business_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_workers_email ON workers(email) WHERE email IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_clients_business_id ON clients(business_id);
 CREATE INDEX IF NOT EXISTS idx_clients_primary_worker_id ON clients(primary_worker_id);
 CREATE INDEX IF NOT EXISTS idx_catalog_business_id ON catalog_items(business_id);
 CREATE INDEX IF NOT EXISTS idx_catalog_type ON catalog_items(item_type);
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(user_id, user_type);
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_token ON auth_sessions(session_token);
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_refresh ON auth_sessions(refresh_token);
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_business ON auth_sessions(business_id);
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires ON auth_sessions(expires_at);
 
 -- AUTOMATIC UPDATED_AT TRIGGER FUNCTION
 CREATE OR REPLACE FUNCTION update_timestamp_column()
@@ -113,3 +140,9 @@ DROP TRIGGER IF EXISTS trigger_catalog_items_updated_at ON catalog_items;
 CREATE TRIGGER trigger_catalog_items_updated_at
 BEFORE UPDATE ON catalog_items
 FOR EACH ROW EXECUTE FUNCTION update_timestamp_column();
+
+DROP TRIGGER IF EXISTS trigger_auth_sessions_updated_at ON auth_sessions;
+CREATE TRIGGER trigger_auth_sessions_updated_at
+BEFORE UPDATE ON auth_sessions
+FOR EACH ROW EXECUTE FUNCTION update_timestamp_column();
+

@@ -1,26 +1,148 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Spa Luxury Extended Palette */
+  --color-spa-rose: var(--spa-rose);
+  --color-spa-blush: var(--spa-blush);
+  --color-spa-gold: var(--spa-gold);
+  --color-spa-sage: var(--spa-sage);
+  --color-spa-lavender: var(--spa-lavender);
+  --color-spa-sand: var(--spa-sand);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+:root {
+  /* Warm silk/alabaster spa background */
+  --background: #fbf9f6;
+  --foreground: #1c1917;
+
+  /* Card & Surface */
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+
+  /* Primary: Rose velvet wellness tone */
+  --primary: #c81e51;
+  --primary-foreground: #ffffff;
+  --primary-hover: #9f1239;
+
+  /* Secondary: Warm linen */
+  --secondary: #f4ece4;
+  --secondary-foreground: #292524;
+
+  /* Muted elements */
+  --muted: #f2eae2;
+  --muted-foreground: #78716c;
+
+  /* Accent: Soft floral tint */
+  --accent: #fdf2f4;
+  --accent-foreground: #be185d;
+
+  /* Feedback */
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  /* Borders & Inputs */
+  --border: #e7dfd5;
+  --input: #e7dfd5;
+  --ring: #c81e51;
+  --radius: 0.75rem;
+
+  /* Custom Spa Palette */
+  --spa-rose: #c81e51;
+  --spa-blush: #fb7185;
+  --spa-gold: #d97706;
+  --spa-sage: #0d9488;
+  --spa-lavender: #8b5cf6;
+  --spa-sand: #f5ebe0;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Obsidian stone dark mode */
+    --background: #0d0c0b;
+    --foreground: #f5f5f4;
+
+    /* Card & Surface */
+    --card: #171513;
+    --card-foreground: #f5f5f4;
+
+    --popover: #171513;
+    --popover-foreground: #f5f5f4;
+
+    /* Primary: Radiant Rose */
+    --primary: #f43f5e;
+    --primary-foreground: #0d0c0b;
+    --primary-hover: #fb7185;
+
+    /* Secondary: Deep warm slate */
+    --secondary: #26221f;
+    --secondary-foreground: #f5f5f4;
+
+    /* Muted elements */
+    --muted: #24201d;
+    --muted-foreground: #a8a29e;
+
+    /* Accent: Deep wine glow */
+    --accent: #2e151e;
+    --accent-foreground: #fda4af;
+
+    /* Feedback */
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+
+    /* Borders & Inputs */
+    --border: #2c2723;
+    --input: #2c2723;
+    --ring: #f43f5e;
+
+    /* Custom Spa Palette */
+    --spa-rose: #f43f5e;
+    --spa-blush: #fda4af;
+    --spa-gold: #fbbf24;
+    --spa-sage: #14b8a6;
+    --spa-lavender: #a78bfa;
+    --spa-sand: #2d2621;
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
 }

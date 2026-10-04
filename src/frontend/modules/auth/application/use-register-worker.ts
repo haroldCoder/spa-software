@@ -9,8 +9,5 @@ export function useRegisterWorker() {
 
   return useMutation<AuthSessionResponse, Error, RegisterWorkerFormValues>({
     mutationFn: (values) => registerWorker(values),
-    onSuccess: (data) => {
-      queryClient.setQueryData(['currentUser'], data.user);
-    },
   });
 }

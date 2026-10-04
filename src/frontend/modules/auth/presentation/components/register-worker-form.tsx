@@ -1,16 +1,31 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRegisterWorker } from '../../application/use-register-worker';
+import { useCurrentUser } from '../../application/use-current-user';
 import { RegisterWorkerFormValues } from '../../domain/auth.types';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
-import { Sparkles, UserCheck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { UserCheck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
-export function RegisterWorkerForm() {
-  const [formData, setFormData] = React.useState<RegisterWorkerFormValues>({
-    businessId: '',
+interface RegisterWorkerFormProps {
+  fixedBusinessId?: string;
+  onSuccessRedirect?: string;
+}
+
+export function RegisterWorkerForm({
+  fixedBusinessId,
+  onSuccessRedirect = '/dashboard',
+}: RegisterWorkerFormProps) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { user } = useCurrentUser();
+  const ownerBusinessId = fixedBusinessId || user?.businessId || '';
+
+  const [formData, setFormData] = React.useState<Omit<RegisterWorkerFormValues, 'businessId' | 'commissionPercentage'>>({
     firstName: '',
     lastName: '',
     email: '',
@@ -18,16 +33,18 @@ export function RegisterWorkerForm() {
     confirmPassword: '',
     phone: '',
     specialty: '',
-    commissionPercentage: 0,
   });
 
+  // Commission as string state to prevent the "010" leading zero bug
+  const [commissionInput, setCommissionInput] = React.useState<string>('');
+
   const [formErrors, setFormErrors] = React.useState<Record<string, string>>({});
-  const { mutate, isPending, isSuccess, data, error, reset } = useRegisterWorker();
+  const { mutate, isPending, isSuccess, error } = useRegisterWorker();
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
-    if (!formData.businessId.trim()) {
-      errors.businessId = 'El UUID del spa o negocio es obligatorio';
+    if (!ownerBusinessId.trim()) {
+      errors.general = 'No se encontró el ID del Spa. Inicia sesión como dueño de spa para continuar.';
     }
     if (!formData.firstName.trim() || formData.firstName.length < 2) {
       errors.firstName = 'El nombre debe tener al menos 2 caracteres';
@@ -48,6 +65,13 @@ export function RegisterWorkerForm() {
       errors.confirmPassword = 'Las contraseñas no coinciden';
     }
 
+    if (commissionInput !== '') {
+      const parsedComm = Number(commissionInput);
+      if (isNaN(parsedComm) || parsedComm < 0 || parsedComm > 100) {
+        errors.commission = 'La comisión debe ser un número entre 0 y 100';
+      }
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -55,10 +79,27 @@ export function RegisterWorkerForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    mutate(formData);
+
+    const parsedCommission = commissionInput.trim() === '' ? 0 : Number(commissionInput);
+
+    mutate(
+      {
+        ...formData,
+        commissionPercentage: parsedCommission,
+        businessId: ownerBusinessId,
+      },
+      {
+        onSuccess: () => {
+          // Invalidate workers cache so dashboard updates immediately
+          queryClient.invalidateQueries({ queryKey: ['businessWorkers'] });
+          // Redirect owner back to the dashboard / home panel
+          router.push(onSuccessRedirect);
+        },
+      }
+    );
   };
 
-  if (isSuccess && data) {
+  if (isSuccess) {
     return (
       <div className="rounded-2xl bg-spa-sage/10 p-8 text-center border border-spa-sage/20 animate-in fade-in duration-300">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-spa-sage/20 text-spa-sage mb-4 shadow-sm">
@@ -68,53 +109,10 @@ export function RegisterWorkerForm() {
           ¡Trabajadora registrada con éxito!
         </h4>
         <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-          Bienvenida, <strong>{data.user.name}</strong>. Has sido vinculada al spa y tu sesión está lista con rol <strong>WORKER</strong>.
+          Redirigiendo al panel de control de tu Spa...
         </p>
-
-        <div className="mt-6 p-4 rounded-xl bg-card border border-border text-left text-xs space-y-1">
-          <p className="text-muted-foreground">
-            <strong>ID de Trabajadora:</strong> <code className="text-spa-sage select-all font-mono">{data.user.id}</code>
-          </p>
-          <p className="text-muted-foreground">
-            <strong>ID del Spa asociado:</strong> <code className="text-foreground select-all font-mono">{data.user.businessId}</code>
-          </p>
-          <p className="text-muted-foreground">
-            <strong>Email:</strong> {data.user.email}
-          </p>
-          <p className="text-muted-foreground">
-            <strong>Rol:</strong> <span className="inline-block px-2 py-0.5 rounded-full bg-spa-sage/15 text-spa-sage text-[10px] font-semibold">{data.user.role}</span>
-          </p>
-        </div>
-
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-          <Button
-            onClick={() => {
-              reset();
-              setFormData({
-                businessId: '',
-                firstName: '',
-                lastName: '',
-                email: '',
-                password: '',
-                confirmPassword: '',
-                phone: '',
-                specialty: '',
-                commissionPercentage: 0,
-              });
-            }}
-            variant="outline"
-            size="sm"
-          >
-            Registrar otra trabajadora
-          </Button>
-          <Button
-            onClick={() => window.location.href = '/docs'}
-            size="sm"
-            className="gap-2"
-          >
-            <Sparkles className="h-4 w-4" />
-            Explorar API
-          </Button>
+        <div className="mt-4 flex justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-spa-sage" />
         </div>
       </div>
     );
@@ -122,6 +120,13 @@ export function RegisterWorkerForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {formErrors.general && (
+        <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <p className="font-semibold">{formErrors.general}</p>
+        </div>
+      )}
+
       {error && (
         <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
@@ -131,24 +136,6 @@ export function RegisterWorkerForm() {
           </div>
         </div>
       )}
-
-      {/* UUID del Spa */}
-      <div>
-        <Label htmlFor="worker-biz-id" required>ID del Spa o Negocio (UUID)</Label>
-        <div className="mt-1.5">
-          <Input
-            id="worker-biz-id"
-            placeholder="Ej. a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
-            value={formData.businessId}
-            onChange={(e) => setFormData({ ...formData, businessId: e.target.value })}
-            error={formErrors.businessId}
-            disabled={isPending}
-          />
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Pide al dueño o administrador del spa el identificador de su negocio.
-          </p>
-        </div>
-      </div>
 
       {/* Nombre y Apellido */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -183,7 +170,7 @@ export function RegisterWorkerForm() {
       {/* Email y Teléfono */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="worker-email" required>Correo Electrónico (Login)</Label>
+          <Label htmlFor="worker-email" required>Correo Electrónico (Login Trabajadora)</Label>
           <div className="mt-1.5">
             <Input
               id="worker-email"
@@ -268,8 +255,9 @@ export function RegisterWorkerForm() {
               max={100}
               step={0.5}
               placeholder="Ej. 30"
-              value={formData.commissionPercentage !== undefined ? formData.commissionPercentage : ''}
-              onChange={(e) => setFormData({ ...formData, commissionPercentage: Number(e.target.value) })}
+              value={commissionInput}
+              onChange={(e) => setCommissionInput(e.target.value)}
+              error={formErrors.commission}
               disabled={isPending}
             />
           </div>
@@ -285,12 +273,12 @@ export function RegisterWorkerForm() {
           {isPending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Registrando trabajadora...</span>
+              <span>Registrando colaboradora...</span>
             </>
           ) : (
             <>
               <UserCheck className="h-4 w-4" />
-              <span>Registrarme como Trabajadora</span>
+              <span>Registrar y Vincular Trabajadora</span>
             </>
           )}
         </Button>

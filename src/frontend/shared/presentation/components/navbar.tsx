@@ -28,7 +28,10 @@ export function Navbar() {
   const navLinks = [
     { href: '/', label: 'Inicio' },
     ...(isAuthenticated && isOwner
-      ? [{ href: '/dashboard', label: 'Panel del Spa', icon: LayoutDashboard }]
+      ? [
+          { href: '/dashboard', label: 'Panel del Spa', icon: LayoutDashboard },
+          { href: '/dashboard/register-worker', label: 'Registrar Trabajadora', icon: UserPlus },
+        ]
       : []),
     { href: '/docs', label: 'Documentación API', icon: BookOpen },
   ];

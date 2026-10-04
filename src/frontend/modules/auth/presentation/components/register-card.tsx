@@ -2,10 +2,8 @@
 
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/src/components/ui/tabs';
 import { RegisterBusinessForm } from './register-business-form';
-import { RegisterWorkerForm } from './register-worker-form';
-import { Building2, UserCheck, Sparkles } from 'lucide-react';
+import { Sparkles, UserCheck } from 'lucide-react';
 
 export function RegisterCard() {
   return (
@@ -15,48 +13,31 @@ export function RegisterCard() {
           <Sparkles className="h-6 w-6" />
         </div>
         <CardTitle className="text-2xl font-serif font-bold text-foreground">
-          Crea tu cuenta en AuraSpa
+          Registra tu Spa en AuraSpa
         </CardTitle>
         <CardDescription className="text-muted-foreground">
-          Selecciona tu perfil para iniciar tu registro con autenticación JWT y sesión segura
+          Crea la cuenta de administrador para gestionar tu spa, tus colaboradoras, clientes y catálogo
         </CardDescription>
       </CardHeader>
 
       <CardContent>
-        <Tabs defaultValue="business" className="w-full">
-          <TabsList>
-            <TabsTrigger value="business" className="gap-2">
-              <Building2 className="h-4 w-4" />
-              <span>Dueño de Spa</span>
-            </TabsTrigger>
-            <TabsTrigger value="worker" className="gap-2">
-              <UserCheck className="h-4 w-4" />
-              <span>Trabajadora</span>
-            </TabsTrigger>
-          </TabsList>
+        {/* Worker Notice */}
+        <div className="mb-6 rounded-xl bg-accent/40 p-3.5 text-xs text-accent-foreground border border-border/70 flex items-start gap-2.5">
+          <UserCheck className="h-4 w-4 text-spa-rose shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong>¿Eres colaboradora o masoterapeuta?</strong> Tu spa debe registrarte desde su panel de control para asignarte comisiones. Si tu cuenta ya fue creada,{' '}
+            <Link href="/login" className="font-semibold text-primary hover:underline">
+              inicia sesión aquí
+            </Link>.
+          </p>
+        </div>
 
-          <TabsContent value="business">
-            <div className="pt-2">
-              <div className="mb-4 rounded-xl bg-accent/60 p-3 text-xs text-accent-foreground border border-border/60">
-                Registra tu spa o salón para gestionar terapeutas, citas, clientes y catálogo de productos con permisos de Administrador.
-              </div>
-              <RegisterBusinessForm />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="worker">
-            <div className="pt-2">
-              <div className="mb-4 rounded-xl bg-accent/60 p-3 text-xs text-accent-foreground border border-border/60">
-                Regístrate como masoterapeuta, estilista o manicurista vinculada a un spa activo para ver tus clientes y calcular tus comisiones.
-              </div>
-              <RegisterWorkerForm />
-            </div>
-          </TabsContent>
-        </Tabs>
+        {/* Spa Owner Registration Form */}
+        <RegisterBusinessForm />
 
         <div className="text-center mt-6 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            ¿Ya tienes una cuenta?{' '}
+            ¿Ya registraste tu negocio?{' '}
             <Link href="/login" className="font-semibold text-primary hover:underline">
               Inicia sesión aquí
             </Link>

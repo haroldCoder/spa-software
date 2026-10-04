@@ -5,6 +5,3 @@ export async function GET(request: NextRequest) {
   return BusinessController.list(request);
 }
 
-export async function POST(request: NextRequest) {
-  return BusinessController.create(request);
-}

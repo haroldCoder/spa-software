@@ -10,7 +10,3 @@ export async function GET(request: NextRequest, context: RouteContext) {
   return WorkerController.listByBusiness(id, request);
 }
 
-export async function POST(request: NextRequest, context: RouteContext) {
-  const { id } = await context.params;
-  return WorkerController.create(request, id);
-}

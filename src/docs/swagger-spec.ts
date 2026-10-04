@@ -23,6 +23,10 @@ export const swaggerSpec = {
   ],
   tags: [
     {
+      name: 'Autenticación (Auth)',
+      description: 'Módulo de autenticación con JWT y sesiones para Spa (Administrador) y Trabajadoras',
+    },
+    {
       name: 'Negocio (Business)',
       description: 'Gestión de Spas / Salones y sucursales',
     },
@@ -40,6 +44,195 @@ export const swaggerSpec = {
     },
   ],
   paths: {
+    '/api/auth/register': {
+      post: {
+        tags: ['Autenticación (Auth)'],
+        summary: 'Registrar un nuevo Spa / Negocio',
+        description: 'Crea un spa con sus credenciales maestras (email y contraseña), crea la primera sesión y retorna el JWT.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/RegisterBusinessDTO' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Spa registrado exitosamente y sesión iniciada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponseDTO' },
+              },
+            },
+          },
+          400: { description: 'Datos inválidos', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+          409: { description: 'Email ya registrado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
+    '/api/auth/business/login': {
+      post: {
+        tags: ['Autenticación (Auth)'],
+        summary: 'Iniciar sesión como Spa / Administrador',
+        description: 'Autentica al dueño o administrador del spa con email y password, genera sesión persistida y JWT.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/LoginBusinessDTO' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Inicio de sesión exitoso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponseDTO' },
+              },
+            },
+          },
+          401: { description: 'Credenciales inválidas', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
+    '/api/auth/worker/register': {
+      post: {
+        tags: ['Autenticación (Auth)'],
+        summary: 'Registrar una nueva Trabajadora',
+        description: 'Registra a una trabajadora en un spa asignándole email, contraseña y rol WORKER, creando sesión activa y retornando JWT.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/RegisterWorkerDTO' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Trabajadora registrada exitosamente y sesión iniciada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponseDTO' },
+              },
+            },
+          },
+          400: { description: 'Datos inválidos', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+          404: { description: 'Negocio no encontrado o inactivo', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+          409: { description: 'Email ya registrado', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
+    '/api/auth/worker/login': {
+      post: {
+        tags: ['Autenticación (Auth)'],
+        summary: 'Iniciar sesión como Trabajadora',
+        description: 'Autentica a una trabajadora con email y password, genera sesión y JWT con rol WORKER.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/LoginWorkerDTO' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Inicio de sesión exitoso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponseDTO' },
+              },
+            },
+          },
+          401: { description: 'Credenciales inválidas o trabajadora inactiva', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
+    '/api/auth/login': {
+      post: {
+        tags: ['Autenticación (Auth)'],
+        summary: 'Inicio de sesión unificado',
+        description: 'Endpoint inteligente que valida credenciales tanto de Administrador de Spa como de Trabajadora.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/LoginUnifiedDTO' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Inicio de sesión exitoso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponseDTO' },
+              },
+            },
+          },
+          401: { description: 'Credenciales inválidas', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
+    '/api/auth/refresh': {
+      post: {
+        tags: ['Autenticación (Auth)'],
+        summary: 'Renovar Access Token (JWT)',
+        description: 'Renueva el JWT de acceso utilizando el refreshToken (enviado en body o cookie) y rota el refreshToken.',
+        requestBody: {
+          required: false,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/RefreshTokenDTO' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Token renovado con éxito',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthTokensDTO' },
+              },
+            },
+          },
+          401: { description: 'Sesión expirada o token inválido', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
+    '/api/auth/logout': {
+      post: {
+        tags: ['Autenticación (Auth)'],
+        summary: 'Cerrar sesión',
+        description: 'Revoca la sesión activa en base de datos y borra las cookies HTTP-Only de autenticación.',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: { description: 'Sesión cerrada exitosamente' },
+        },
+      },
+    },
+    '/api/auth/me': {
+      get: {
+        tags: ['Autenticación (Auth)'],
+        summary: 'Obtener perfil del usuario autenticado',
+        description: 'Retorna los datos del usuario en sesión (Spa o Trabajadora) validando el JWT y la sesión activa en BD.',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Perfil de usuario obtenido',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthenticatedUserDTO' },
+              },
+            },
+          },
+          401: { description: 'No autenticado o token inválido', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
     '/api/businesses': {
       get: {
         tags: ['Negocio (Business)'],
@@ -68,51 +261,6 @@ export const swaggerSpec = {
                     },
                   },
                 },
-              },
-            },
-          },
-        },
-      },
-      post: {
-        tags: ['Negocio (Business)'],
-        summary: 'Crear un nuevo negocio',
-        description: 'Registra un nuevo spa o negocio.',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/CreateBusinessDTO' },
-            },
-          },
-        },
-        responses: {
-          201: {
-            description: 'Negocio creado exitosamente',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true },
-                    data: { $ref: '#/components/schemas/BusinessResponseDTO' },
-                  },
-                },
-              },
-            },
-          },
-          400: {
-            description: 'Error de validación o datos inválidos (BadRequestError)',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
-              },
-            },
-          },
-          409: {
-            description: 'Conflicto: ya existe un negocio con ese correo electrónico',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
               },
             },
           },
@@ -281,59 +429,6 @@ export const swaggerSpec = {
                     },
                   },
                 },
-              },
-            },
-          },
-          404: {
-            description: 'Negocio no encontrado',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
-              },
-            },
-          },
-        },
-      },
-      post: {
-        tags: ['Trabajadoras (Workers)'],
-        summary: 'Registrar trabajadora en un negocio',
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: { type: 'string', format: 'uuid' },
-            description: 'UUID del negocio al que pertenecerá la trabajadora',
-          },
-        ],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: { $ref: '#/components/schemas/CreateWorkerDTO' },
-            },
-          },
-        },
-        responses: {
-          201: {
-            description: 'Trabajadora registrada exitosamente',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true },
-                    data: { $ref: '#/components/schemas/WorkerResponseDTO' },
-                  },
-                },
-              },
-            },
-          },
-          400: {
-            description: 'Datos inválidos o comisión fuera de rango (BadRequestError)',
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
               },
             },
           },
@@ -1176,6 +1271,102 @@ export const swaggerSpec = {
           updatedAt: { type: 'string', format: 'date-time' },
         },
       },
+      RegisterBusinessDTO: {
+        type: 'object',
+        required: ['name', 'email', 'password'],
+        properties: {
+          name: { type: 'string', example: 'Spa Bienestar & Armonía' },
+          legalName: { type: 'string', nullable: true, example: 'Bienestar S.A.S' },
+          taxId: { type: 'string', nullable: true, example: '900123456-7' },
+          email: { type: 'string', format: 'email', example: 'contacto@spabienestar.com' },
+          password: { type: 'string', format: 'password', minLength: 6, example: 'Secret123*' },
+          phone: { type: 'string', nullable: true, example: '+57 300 1234567' },
+          address: { type: 'string', nullable: true, example: 'Cra 43A # 1-50' },
+          city: { type: 'string', nullable: true, example: 'Medellín' },
+          country: { type: 'string', default: 'CO' },
+          currency: { type: 'string', default: 'COP' },
+        },
+      },
+      RegisterWorkerDTO: {
+        type: 'object',
+        required: ['businessId', 'firstName', 'lastName', 'email', 'password', 'phone'],
+        properties: {
+          businessId: { type: 'string', format: 'uuid', example: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11' },
+          firstName: { type: 'string', example: 'Camila' },
+          lastName: { type: 'string', example: 'Gómez' },
+          email: { type: 'string', format: 'email', example: 'camila.terapeuta@spabienestar.com' },
+          password: { type: 'string', format: 'password', minLength: 6, example: 'Trabajadora2026*' },
+          phone: { type: 'string', example: '+57 312 9876543' },
+          specialty: { type: 'string', nullable: true, example: 'Masoterapeuta & Cosmiatra' },
+          commissionPercentage: { type: 'number', minimum: 0, maximum: 100, default: 0, example: 30 },
+        },
+      },
+      LoginBusinessDTO: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email', example: 'contacto@spabienestar.com' },
+          password: { type: 'string', format: 'password', example: 'Secret123*' },
+        },
+      },
+      LoginWorkerDTO: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email', example: 'terapeuta@spabienestar.com' },
+          password: { type: 'string', format: 'password', example: 'Trabajadora2026*' },
+        },
+      },
+      LoginUnifiedDTO: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email', example: 'contacto@spabienestar.com' },
+          password: { type: 'string', format: 'password', example: 'Secret123*' },
+          userType: { type: 'string', enum: ['BUSINESS', 'WORKER'], nullable: true },
+        },
+      },
+      RefreshTokenDTO: {
+        type: 'object',
+        required: ['refreshToken'],
+        properties: {
+          refreshToken: { type: 'string' },
+        },
+      },
+      AuthenticatedUserDTO: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          businessId: { type: 'string', format: 'uuid' },
+          email: { type: 'string' },
+          name: { type: 'string' },
+          role: { type: 'string', enum: ['BUSINESS_OWNER', 'WORKER'] },
+          userType: { type: 'string', enum: ['BUSINESS', 'WORKER'] },
+        },
+      },
+      AuthTokensDTO: {
+        type: 'object',
+        properties: {
+          accessToken: { type: 'string' },
+          refreshToken: { type: 'string' },
+          expiresIn: { type: 'string', example: '2h' },
+          tokenType: { type: 'string', example: 'Bearer' },
+        },
+      },
+      AuthResponseDTO: {
+        type: 'object',
+        properties: {
+          user: { $ref: '#/components/schemas/AuthenticatedUserDTO' },
+          tokens: { $ref: '#/components/schemas/AuthTokensDTO' },
+          session: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              expiresAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
       ApiErrorResponse: {
         type: 'object',
         properties: {
@@ -1189,6 +1380,14 @@ export const swaggerSpec = {
             },
           },
         },
+      },
+    },
+    securitySchemes: {
+      BearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Introduce el JWT de acceso devuelto en el login o registro.',
       },
     },
   },

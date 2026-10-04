@@ -14,6 +14,7 @@ export class HttpClient {
     };
 
     const response = await fetch(endpoint, {
+      credentials: 'same-origin',
       ...options,
       headers: {
         ...defaultHeaders,

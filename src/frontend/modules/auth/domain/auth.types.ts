@@ -24,6 +24,12 @@ export interface RegisterWorkerFormValues {
   commissionPercentage?: number;
 }
 
+export interface LoginFormValues {
+  email: string;
+  password: string;
+  userType?: 'BUSINESS' | 'WORKER';
+}
+
 export interface AuthSessionResponse {
   user: {
     id: string;

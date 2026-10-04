@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Menu, X, BookOpen, UserPlus } from 'lucide-react';
+import { Sparkles, Menu, X, BookOpen, UserPlus, LogIn } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
 
@@ -63,6 +63,12 @@ export function Navbar() {
 
         {/* Desktop CTA Buttons */}
         <div className="hidden md:flex items-center gap-3">
+          <Link href="/login">
+            <Button variant="outline" size="sm" className="gap-2">
+              <LogIn className="h-4 w-4" />
+              <span>Iniciar Sesión</span>
+            </Button>
+          </Link>
           <Link href="/register">
             <Button size="sm" className="gap-2">
               <UserPlus className="h-4 w-4" />
@@ -104,6 +110,12 @@ export function Navbar() {
             ))}
           </div>
           <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2">
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="outline" className="w-full gap-2 justify-center">
+                <LogIn className="h-4 w-4" />
+                Iniciar Sesión
+              </Button>
+            </Link>
             <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
               <Button className="w-full gap-2 justify-center">
                 <UserPlus className="h-4 w-4" />

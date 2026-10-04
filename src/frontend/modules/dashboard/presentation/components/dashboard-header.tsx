@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
 import { BusinessProfile } from '../../domain/dashboard.types';
@@ -82,7 +81,6 @@ export function DashboardHeader({
           )}
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <Button
             variant="outline"
@@ -95,19 +93,10 @@ export function DashboardHeader({
             <span>Actualizar</span>
           </Button>
 
-          <Link href="/register">
-            <Button size="sm" className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              <span>Vincular Trabajadora</span>
-            </Button>
-          </Link>
-
-          <Link href="/docs">
-            <Button variant="outline" size="sm" className="gap-2">
-              <BookOpen className="h-4 w-4 text-spa-rose" />
-              <span>Swagger</span>
-            </Button>
-          </Link>
+          <Button size="sm" variant="secondary" className="gap-2">
+            <UserPlus className="h-4 w-4 text-spa-rose" />
+            <span>Vincular Trabajadora</span>
+          </Button>
         </div>
       </div>
     </div>

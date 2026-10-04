@@ -3,17 +3,33 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, Menu, X, BookOpen, UserPlus, LogIn, LayoutDashboard } from 'lucide-react';
+import {
+  Sparkles,
+  Menu,
+  X,
+  BookOpen,
+  UserPlus,
+  LogIn,
+  LogOut,
+  LayoutDashboard,
+  User,
+} from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
+import { useCurrentUser } from '@/src/frontend/modules/auth/application/use-current-user';
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const pathname = usePathname();
+  const { user, isAuthenticated, logout, isLoggingOut } = useCurrentUser();
+
+  const isOwner = user?.role === 'BUSINESS_OWNER' || user?.userType === 'BUSINESS';
 
   const navLinks = [
     { href: '/', label: 'Inicio' },
-    { href: '/dashboard', label: 'Panel del Spa', icon: LayoutDashboard },
+    ...(isAuthenticated && isOwner
+      ? [{ href: '/dashboard', label: 'Panel del Spa', icon: LayoutDashboard }]
+      : []),
     { href: '/docs', label: 'Documentación API', icon: BookOpen },
   ];
 
@@ -62,20 +78,51 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Desktop CTA Buttons */}
+        {/* Desktop CTA / Profile section */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/login">
-            <Button variant="outline" size="sm" className="gap-2">
-              <LogIn className="h-4 w-4" />
-              <span>Iniciar Sesión</span>
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button size="sm" className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              <span>Registrarse</span>
-            </Button>
-          </Link>
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card border border-border/70 text-xs">
+                <div className="h-6 w-6 rounded-full bg-spa-rose/15 text-spa-rose flex items-center justify-center font-bold text-[11px]">
+                  {user.name?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <div className="text-left">
+                  <div className="font-semibold text-foreground truncate max-w-[130px] leading-tight">
+                    {user.name}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {isOwner ? 'Dueño del Spa' : 'Trabajadora'}
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => logout()}
+                disabled={isLoggingOut}
+                className="gap-1.5 text-xs text-muted-foreground hover:text-destructive hover:border-destructive/30"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>{isLoggingOut ? 'Saliendo...' : 'Cerrar Sesión'}</span>
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  <span>Iniciar Sesión</span>
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm" className="gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  <span>Registrarse</span>
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -110,19 +157,49 @@ export function Navbar() {
               </Link>
             ))}
           </div>
+
           <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2">
-            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="outline" className="w-full gap-2 justify-center">
-                <LogIn className="h-4 w-4" />
-                Iniciar Sesión
-              </Button>
-            </Link>
-            <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full gap-2 justify-center">
-                <UserPlus className="h-4 w-4" />
-                Registrarse
-              </Button>
-            </Link>
+            {isAuthenticated && user ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-accent/40 border border-border text-sm">
+                  <div className="h-8 w-8 rounded-full bg-spa-rose/15 text-spa-rose flex items-center justify-center font-bold">
+                    {user.name?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-foreground">{user.name}</div>
+                    <div className="text-xs text-muted-foreground">{user.email}</div>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                  }}
+                  disabled={isLoggingOut}
+                  className="w-full gap-2 justify-center text-destructive"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>{isLoggingOut ? 'Saliendo...' : 'Cerrar Sesión'}</span>
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full gap-2 justify-center">
+                    <LogIn className="h-4 w-4" />
+                    Iniciar Sesión
+                  </Button>
+                </Link>
+                <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full gap-2 justify-center">
+                    <UserPlus className="h-4 w-4" />
+                    Registrarse
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/src/components/ui/card';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
@@ -41,12 +40,10 @@ export function WorkersTableCard({ workers, businessId }: WorkersTableCardProps)
         </div>
 
         <div className="flex items-center gap-2">
-          <Link href="/register">
-            <Button size="sm" className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              <span>Nueva Colaboradora</span>
-            </Button>
-          </Link>
+          <Button size="sm" variant="secondary" className="gap-2">
+            <UserPlus className="h-4 w-4 text-spa-rose" />
+            <span>Nueva Colaboradora</span>
+          </Button>
         </div>
       </CardHeader>
 
@@ -95,12 +92,10 @@ export function WorkersTableCard({ workers, businessId }: WorkersTableCardProps)
               Comparte el ID de tu spa con tus terapeutas para que se auto-registren o regístralas tú mismo desde el formulario.
             </p>
             <div className="mt-4 flex justify-center gap-2">
-              <Link href="/register">
-                <Button size="sm" variant="default" className="gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  <span>Registrar la primera colaboradora</span>
-                </Button>
-              </Link>
+              <Button size="sm" variant="outline" className="gap-2">
+                <UserPlus className="h-4 w-4 text-spa-rose" />
+                <span>Registrar colaboradora</span>
+              </Button>
             </div>
           </div>
         ) : (

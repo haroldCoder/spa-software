@@ -6,6 +6,7 @@ import { RegisterWorkerForm } from '@/src/frontend/modules/auth/presentation/com
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/src/components/ui/card';
 import { Badge } from '@/src/components/ui/badge';
 import { Button } from '@/src/components/ui/button';
+import { APP_ROUTES } from '@/src/frontend/shared/constants/routes';
 import { UserPlus, ArrowLeft, Loader2, Lock, Building2 } from 'lucide-react';
 
 export function OwnerRegisterWorkerView() {
@@ -38,7 +39,7 @@ export function OwnerRegisterWorkerView() {
             Debes haber iniciado sesión como dueño de un Spa para poder registrar colaboradoras en tu negocio.
           </p>
           <div className="mt-6">
-            <Link href="/login">
+            <Link href={APP_ROUTES.AUTH.LOGIN}>
               <Button size="sm">Iniciar Sesión</Button>
             </Link>
           </div>
@@ -55,7 +56,7 @@ export function OwnerRegisterWorkerView() {
       {/* Back button link */}
       <div>
         <Link
-          href="/dashboard"
+          href={APP_ROUTES.DASHBOARD.ROOT}
           className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -88,7 +89,7 @@ export function OwnerRegisterWorkerView() {
         <CardContent>
           <RegisterWorkerForm
             fixedBusinessId={businessId}
-            onSuccessRedirect="/dashboard"
+            onSuccessRedirect={APP_ROUTES.DASHBOARD.ROOT}
           />
         </CardContent>
       </Card>

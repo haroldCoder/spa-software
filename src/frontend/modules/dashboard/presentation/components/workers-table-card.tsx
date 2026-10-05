@@ -1,9 +1,11 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/src/components/ui/card';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
+import { APP_ROUTES } from '@/src/frontend/shared/constants/routes';
 import { BusinessWorkerItem } from '../../domain/dashboard.types';
 import { Users, UserPlus, Copy, Check, Sparkles } from 'lucide-react';
 import { WorkersTable } from '@/src/frontend/shared/presentation/components/workers-table';
@@ -41,10 +43,12 @@ export function WorkersTableCard({ workers, businessId }: WorkersTableCardProps)
         </div>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="secondary" className="gap-2">
-            <UserPlus className="h-4 w-4 text-spa-rose" />
-            <span>Nueva Colaboradora</span>
-          </Button>
+          <Link href={APP_ROUTES.DASHBOARD.REGISTER_WORKER}>
+            <Button size="sm" variant="secondary" className="gap-2">
+              <UserPlus className="h-4 w-4 text-spa-rose" />
+              <span>Nueva Colaboradora</span>
+            </Button>
+          </Link>
         </div>
       </CardHeader>
 
@@ -93,10 +97,12 @@ export function WorkersTableCard({ workers, businessId }: WorkersTableCardProps)
               Comparte el ID de tu spa con tus terapeutas para que se auto-registren o regístralas tú mismo desde el formulario.
             </p>
             <div className="mt-4 flex justify-center gap-2">
-              <Button size="sm" variant="outline" className="gap-2">
-                <UserPlus className="h-4 w-4 text-spa-rose" />
-                <span>Registrar colaboradora</span>
-              </Button>
+              <Link href={APP_ROUTES.DASHBOARD.REGISTER_WORKER}>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <UserPlus className="h-4 w-4 text-spa-rose" />
+                  <span>Registrar colaboradora</span>
+                </Button>
+              </Link>
             </div>
           </div>
         ) : (

@@ -9,6 +9,7 @@ import {
   X,
   BookOpen,
   UserPlus,
+  UserCheck,
   LogIn,
   LogOut,
   LayoutDashboard,
@@ -17,6 +18,7 @@ import {
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
 import { useCurrentUser } from '@/src/frontend/modules/auth/application/use-current-user';
+import { APP_ROUTES } from '@/src/frontend/shared/constants/routes';
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -26,21 +28,22 @@ export function Navbar() {
   const isOwner = user?.role === 'BUSINESS_OWNER' || user?.userType === 'BUSINESS';
 
   const navLinks = [
-    { href: '/', label: 'Inicio' },
+    { href: APP_ROUTES.HOME, label: 'Inicio' },
     ...(isAuthenticated && isOwner
       ? [
-          { href: '/dashboard', label: 'Panel del Spa', icon: LayoutDashboard },
-          { href: '/dashboard/register-worker', label: 'Registrar Trabajadora', icon: UserPlus },
-        ]
+        { href: APP_ROUTES.DASHBOARD.ROOT, label: 'Panel del Spa', icon: LayoutDashboard },
+        { href: APP_ROUTES.DASHBOARD.REGISTER_WORKER, label: 'Registrar Trabajadora', icon: UserPlus },
+        { href: APP_ROUTES.DASHBOARD.REGISTER_CLIENT, label: 'Registrar Cliente', icon: UserCheck },
+      ]
       : []),
-    { href: '/docs', label: 'Documentación API', icon: BookOpen },
+    { href: APP_ROUTES.DOCS, label: 'Documentación API', icon: BookOpen },
   ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group transition-transform active:scale-95">
+        <Link href={APP_ROUTES.HOME} className="flex items-center gap-2.5 group transition-transform active:scale-95">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-spa-rose to-spa-blush text-white shadow-md shadow-spa-rose/25 group-hover:shadow-spa-rose/40 transition-shadow">
             <Sparkles className="h-5 w-5 animate-pulse" />
           </div>
@@ -68,11 +71,10 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
-                  isActive
+                className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${isActive
                     ? 'text-primary font-semibold'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 {Icon && <Icon className="h-4 w-4" />}
                 {link.label}
@@ -112,13 +114,13 @@ export function Navbar() {
             </div>
           ) : (
             <>
-              <Link href="/login">
+              <Link href={APP_ROUTES.AUTH.LOGIN}>
                 <Button variant="outline" size="sm" className="gap-2">
                   <LogIn className="h-4 w-4" />
                   <span>Iniciar Sesión</span>
                 </Button>
               </Link>
-              <Link href="/register">
+              <Link href={APP_ROUTES.AUTH.REGISTER}>
                 <Button size="sm" className="gap-2">
                   <UserPlus className="h-4 w-4" />
                   <span>Registrarse</span>
@@ -150,11 +152,10 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block rounded-lg px-3 py-2 text-base font-medium ${
-                  pathname === link.href
+                className={`block rounded-lg px-3 py-2 text-base font-medium ${pathname === link.href
                     ? 'bg-accent text-accent-foreground font-semibold'
                     : 'text-foreground hover:bg-muted'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>
@@ -189,13 +190,13 @@ export function Navbar() {
               </div>
             ) : (
               <>
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Link href={APP_ROUTES.AUTH.LOGIN} onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full gap-2 justify-center">
                     <LogIn className="h-4 w-4" />
                     Iniciar Sesión
                   </Button>
                 </Link>
-                <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                <Link href={APP_ROUTES.AUTH.REGISTER} onClick={() => setMobileMenuOpen(false)}>
                   <Button className="w-full gap-2 justify-center">
                     <UserPlus className="h-4 w-4" />
                     Registrarse

@@ -937,6 +937,81 @@ export const swaggerSpec = {
         },
       },
     },
+    '/api/businesses/{id}/catalog/upload': {
+      post: {
+        tags: ['Catálogo (Catalog)'],
+        summary: 'Subir imagen para producto o servicio (Bucket: products)',
+        description: 'Sube un archivo de imagen en formato multipart/form-data al bucket "products" en Supabase Storage y retorna la URL pública.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'UUID del negocio o Spa',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                required: ['file'],
+                properties: {
+                  file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'Archivo de imagen (JPG, PNG, WEBP, GIF, AVIF hasta 10MB)',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Imagen subida exitosamente al bucket products',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/UploadCatalogImageResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: 'Archivo inválido o tamaño mayor a 10MB (BadRequestError)',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
+              },
+            },
+          },
+          401: {
+            description: 'No autorizado (Token JWT requerido)',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
+              },
+            },
+          },
+          404: {
+            description: 'Negocio no encontrado (NotFoundError)',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
+              },
+            },
+          },
+        },
+      },
+    },
     '/api/catalog/{id}': {
       get: {
         tags: ['Catálogo (Catalog)'],
@@ -1071,6 +1146,69 @@ export const swaggerSpec = {
           },
           404: {
             description: 'Artículo no encontrado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/catalog/upload': {
+      post: {
+        tags: ['Catálogo (Catalog)'],
+        summary: 'Subir imagen para producto o servicio a Supabase Storage (Bucket: products)',
+        description: 'Sube un archivo de imagen indicando businessId en el form-data o en la cabecera x-business-id al bucket "products" de Supabase Storage.',
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                required: ['file'],
+                properties: {
+                  file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'Archivo de imagen del producto o servicio (ej. arreglo de uñas, corte, exfoliación, producto cosmético)',
+                  },
+                  businessId: {
+                    type: 'string',
+                    format: 'uuid',
+                    description: 'UUID del Spa / Negocio (opcional si se incluye en header)',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Imagen subida exitosamente al bucket products',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/UploadCatalogImageResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: 'Faltan parámetros o archivo no válido (BadRequestError)',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
+              },
+            },
+          },
+          401: {
+            description: 'No autorizado',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/ApiErrorResponse' },
@@ -1226,15 +1364,22 @@ export const swaggerSpec = {
         required: ['businessId', 'name', 'itemType', 'price'],
         properties: {
           businessId: { type: 'string', format: 'uuid' },
-          name: { type: 'string', example: 'Masaje Relajante con Piedras Calientes' },
-          description: { type: 'string', nullable: true, example: 'Masaje corporal completo de 60 minutos con aromaterapia y piedras volcánicas.' },
+          name: { type: 'string', example: 'Arreglo de Uñas Spa Semipermanente' },
+          description: { type: 'string', nullable: true, example: 'Manicura completa, exfoliación de manos, hidratación y esmaltado semipermanente de larga duración.' },
           itemType: { type: 'string', enum: ['SERVICE', 'PRODUCT'], example: 'SERVICE' },
-          category: { type: 'string', nullable: true, example: 'Corporales' },
-          price: { type: 'number', minimum: 0, example: 120000.0 },
-          cost: { type: 'number', minimum: 0, default: 0, example: 30000.0 },
+          category: { type: 'string', nullable: true, example: 'Uñas' },
+          price: { type: 'number', minimum: 0, example: 55000.0 },
+          cost: { type: 'number', minimum: 0, default: 0, example: 12000.0 },
           durationMinutes: { type: 'integer', minimum: 1, nullable: true, example: 60, description: 'Requerido para servicios' },
           stockQuantity: { type: 'integer', minimum: 0, nullable: true, example: null, description: 'Requerido para productos físicos' },
           sku: { type: 'string', nullable: true, example: null },
+          imageUrl: {
+            type: 'string',
+            format: 'uri',
+            nullable: true,
+            example: 'https://xyz.supabase.co/storage/v1/object/public/products/b0e008cb-312f-48d6-95df-32ef093a8934/1728123456-unas-spa.jpg',
+            description: 'URL pública de la imagen almacenada en el bucket products de Supabase Storage',
+          },
         },
       },
       UpdateCatalogItemDTO: {
@@ -1249,6 +1394,12 @@ export const swaggerSpec = {
           durationMinutes: { type: 'integer', minimum: 1, nullable: true },
           stockQuantity: { type: 'integer', minimum: 0, nullable: true },
           sku: { type: 'string', nullable: true },
+          imageUrl: {
+            type: 'string',
+            format: 'uri',
+            nullable: true,
+            example: 'https://xyz.supabase.co/storage/v1/object/public/products/b0e008cb-312f-48d6-95df-32ef093a8934/1728123456-unas-spa.jpg',
+          },
           isActive: { type: 'boolean' },
         },
       },
@@ -1266,9 +1417,24 @@ export const swaggerSpec = {
           durationMinutes: { type: 'integer', nullable: true },
           stockQuantity: { type: 'integer', nullable: true },
           sku: { type: 'string', nullable: true },
+          imageUrl: { type: 'string', format: 'uri', nullable: true },
           isActive: { type: 'boolean' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      UploadCatalogImageResponseDTO: {
+        type: 'object',
+        properties: {
+          imageUrl: {
+            type: 'string',
+            format: 'uri',
+            example: 'https://xyz.supabase.co/storage/v1/object/public/products/b0e008cb-312f-48d6-95df-32ef093a8934/1728123456-unas-spa.jpg',
+          },
+          fileName: {
+            type: 'string',
+            example: 'unas-spa.jpg',
+          },
         },
       },
       RegisterBusinessDTO: {

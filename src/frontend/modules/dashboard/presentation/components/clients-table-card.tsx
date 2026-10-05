@@ -1,9 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/src/components/ui/card';
 import { Badge } from '@/src/components/ui/badge';
+import { Button } from '@/src/components/ui/button';
+import { APP_ROUTES } from '@/src/frontend/shared/constants/routes';
 import { BusinessClientItem } from '../../domain/dashboard.types';
-import { UserCheck } from 'lucide-react';
+import { UserCheck, UserPlus } from 'lucide-react';
 import { ClientsTable } from '@/src/frontend/shared/presentation/components/clients-table';
 
 interface ClientsTableCardProps {
@@ -28,6 +31,15 @@ export function ClientsTableCard({ clients }: ClientsTableCardProps) {
             Historial de usuarios que han recibido tratamientos o agendado citas
           </CardDescription>
         </div>
+
+        <div className="flex items-center gap-2">
+          <Link href={APP_ROUTES.DASHBOARD.REGISTER_CLIENT}>
+            <Button size="sm" variant="secondary" className="gap-2">
+              <UserPlus className="h-4 w-4 text-spa-sage" />
+              <span>Nuevo Cliente</span>
+            </Button>
+          </Link>
+        </div>
       </CardHeader>
 
       <CardContent>
@@ -42,6 +54,14 @@ export function ClientsTableCard({ clients }: ClientsTableCardProps) {
             <p className="mt-1 text-xs text-muted-foreground max-w-sm mx-auto">
               Tus colaboradoras o el administrador podrán crear clientes al momento de agendar citas o vender servicios en el spa.
             </p>
+            <div className="mt-4 flex justify-center gap-2">
+              <Link href={APP_ROUTES.DASHBOARD.REGISTER_CLIENT}>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <UserPlus className="h-4 w-4 text-spa-sage" />
+                  <span>Registrar cliente</span>
+                </Button>
+              </Link>
+            </div>
           </div>
         ) : (
           <ClientsTable clients={clients} />

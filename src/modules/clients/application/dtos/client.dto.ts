@@ -2,14 +2,19 @@ import { z } from 'zod';
 
 export const CreateClientSchema = z.object({
   businessId: z.string().uuid('businessId debe ser un UUID válido'),
-  primaryWorkerId: z.string().uuid('primaryWorkerId debe ser un UUID válido').optional().nullable(),
+  primaryWorkerId: z
+    .preprocess((val) => (val === '' || val === undefined ? null : val), z.string().uuid('primaryWorkerId debe ser un UUID válido').nullable().optional()),
   firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   lastName: z.string().min(2, 'El apellido debe tener al menos 2 caracteres'),
-  email: z.string().email('Debe ser un correo electrónico válido').optional().nullable(),
+  email: z
+    .preprocess((val) => (val === '' || val === undefined ? null : val), z.string().email('Debe ser un correo electrónico válido').nullable().optional()),
   phone: z.string().min(7, 'El teléfono debe tener al menos 7 caracteres'),
-  identificationNumber: z.string().optional().nullable(),
-  birthDate: z.string().optional().nullable(), // YYYY-MM-DD
-  notes: z.string().optional().nullable(),
+  identificationNumber: z
+    .preprocess((val) => (val === '' || val === undefined ? null : val), z.string().nullable().optional()),
+  birthDate: z
+    .preprocess((val) => (val === '' || val === undefined ? null : val), z.string().nullable().optional()), // YYYY-MM-DD
+  notes: z
+    .preprocess((val) => (val === '' || val === undefined ? null : val), z.string().nullable().optional()),
 });
 
 export const UpdateClientSchema = CreateClientSchema.omit({ businessId: true }).partial().extend({

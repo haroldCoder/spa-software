@@ -12,16 +12,5 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 export async function POST(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
-  // Inject businessId into body
-  try {
-    const body = await request.json();
-    const modifiedRequest = new NextRequest(request.url, {
-      method: 'POST',
-      headers: request.headers,
-      body: JSON.stringify({ ...body, businessId: id }),
-    });
-    return ClientController.create(modifiedRequest);
-  } catch (error) {
-    return ClientController.create(request);
-  }
+  return ClientController.create(request, undefined, id);
 }

@@ -28,11 +28,16 @@ export class ClientController {
     };
   }
 
-  public static async create(request: NextRequest, workerIdFromParams?: string): Promise<NextResponse> {
+  public static async create(
+    request: NextRequest,
+    workerIdFromParams?: string,
+    businessIdFromParams?: string
+  ): Promise<NextResponse> {
     try {
       const body = await request.json();
       const payload = {
         ...body,
+        businessId: businessIdFromParams || body.businessId,
         primaryWorkerId: workerIdFromParams || body.primaryWorkerId,
       };
 

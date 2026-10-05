@@ -5,7 +5,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/src
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
 import { BusinessWorkerItem } from '../../domain/dashboard.types';
-import { Users, UserPlus, Copy, Check, Sparkles, Phone, Mail, Award } from 'lucide-react';
+import { Users, UserPlus, Copy, Check, Sparkles } from 'lucide-react';
+import { WorkersTable } from '@/src/frontend/shared/presentation/components/workers-table';
 
 interface WorkersTableCardProps {
   workers: BusinessWorkerItem[];
@@ -99,85 +100,7 @@ export function WorkersTableCard({ workers, businessId }: WorkersTableCardProps)
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-border/70">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground border-b border-border/70">
-                <tr>
-                  <th className="py-3 px-4">Colaboradora</th>
-                  <th className="py-3 px-4">Contacto</th>
-                  <th className="py-3 px-4">Especialidad</th>
-                  <th className="py-3 px-4">Comisión</th>
-                  <th className="py-3 px-4 text-center">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 bg-card">
-                {workers.map((worker) => {
-                  const initials = `${worker.firstName?.[0] || ''}${worker.lastName?.[0] || ''}`.toUpperCase() || 'W';
-                  return (
-                    <tr
-                      key={worker.id}
-                      className="hover:bg-accent/30 transition-colors"
-                    >
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-spa-rose/20 to-spa-blush/20 border border-spa-rose/30 flex items-center justify-center text-xs font-bold text-spa-rose">
-                            {initials}
-                          </div>
-                          <div>
-                            <div className="font-medium text-foreground">
-                              {worker.firstName} {worker.lastName}
-                            </div>
-                            <div className="text-[11px] text-muted-foreground font-mono">
-                              ID: {worker.id.slice(0, 8)}...
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-xs">
-                        <div className="space-y-0.5">
-                          {worker.email && (
-                            <div className="flex items-center gap-1.5 text-muted-foreground">
-                              <Mail className="h-3 w-3" />
-                              <span>{worker.email}</span>
-                            </div>
-                          )}
-                          {worker.phone && (
-                            <div className="flex items-center gap-1.5 text-muted-foreground">
-                              <Phone className="h-3 w-3" />
-                              <span>{worker.phone}</span>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {worker.specialty ? (
-                          <Badge variant="outline" className="text-xs gap-1 font-normal">
-                            <Award className="h-3 w-3 text-spa-rose" />
-                            <span>{worker.specialty}</span>
-                          </Badge>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">General</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <Badge variant="spa" className="font-semibold text-xs">
-                          {worker.commissionPercentage || 0}%
-                        </Badge>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <Badge
-                          variant={worker.isActive ? 'success' : 'secondary'}
-                          className="text-[11px]"
-                        >
-                          {worker.isActive ? 'Activa' : 'Inactiva'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <WorkersTable workers={workers} />
         )}
       </CardContent>
     </Card>

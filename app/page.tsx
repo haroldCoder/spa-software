@@ -42,10 +42,6 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-accent/60 px-3.5 py-1 text-xs font-semibold text-accent-foreground shadow-sm backdrop-blur-sm mb-6">
-            <Sparkles className="h-3.5 w-3.5 text-spa-rose animate-pulse" />
-            <span>Arquitectura Hexagonal &middot; TanStack Query &middot; shadcn/ui</span>
-          </div>
 
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground max-w-4xl mx-auto leading-tight">
             Gestión integral y elegante para tu{' '}

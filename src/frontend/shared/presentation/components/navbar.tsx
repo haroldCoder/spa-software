@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
+import { ScrollArea } from '@/src/components/ui/scroll-area';
 import { useCurrentUser } from '@/src/frontend/modules/auth/application/use-current-user';
 import { APP_ROUTES } from '@/src/frontend/shared/constants/routes';
 
@@ -27,8 +28,12 @@ export function Navbar() {
 
   const isOwner = user?.role === 'BUSINESS_OWNER' || user?.userType === 'BUSINESS';
 
+  const homeHref = isAuthenticated
+    ? (isOwner ? APP_ROUTES.DASHBOARD.ROOT : APP_ROUTES.SERVICIOS)
+    : APP_ROUTES.HOME;
+
   const navLinks = [
-    { href: APP_ROUTES.HOME, label: 'Inicio' },
+    ...(!isAuthenticated ? [{ href: APP_ROUTES.HOME, label: 'Inicio' }] : []),
     ...(isAuthenticated && isOwner
       ? [
         { href: APP_ROUTES.DASHBOARD.ROOT, label: 'Panel del Spa', icon: LayoutDashboard },
@@ -48,7 +53,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand Logo */}
-        <Link href={APP_ROUTES.HOME} className="flex items-center gap-2.5 group transition-transform active:scale-95">
+        <Link href={homeHref} className="flex shrink-0 items-center gap-2.5 group transition-transform active:scale-95">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-spa-rose to-spa-blush text-white shadow-md shadow-spa-rose/25 group-hover:shadow-spa-rose/40 transition-shadow">
             <Sparkles className="h-5 w-5 animate-pulse" />
           </div>
@@ -67,29 +72,34 @@ export function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href;
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${isActive
-                    ? 'text-primary font-semibold'
-                    : 'text-muted-foreground hover:text-foreground'
-                  }`}
-              >
-                {Icon && <Icon className="h-4 w-4" />}
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Desktop Navigation Links with Shadcn Horizontal ScrollArea */}
+        <div className="hidden md:flex flex-1 items-center justify-center min-w-0 px-4">
+          <ScrollArea className="w-full max-w-2xl whitespace-nowrap">
+            <nav className="flex w-max items-center gap-1.5 py-1 px-1">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-xs lg:text-sm font-medium rounded-full transition-all duration-150 ${
+                      isActive
+                        ? 'bg-spa-rose/15 text-spa-rose font-semibold shadow-sm shadow-spa-rose/10'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                    }`}
+                  >
+                    {Icon && <Icon className="h-4 w-4 shrink-0" />}
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </ScrollArea>
+        </div>
 
         {/* Desktop CTA / Profile section */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex shrink-0 items-center gap-3">
           {isAuthenticated && user ? (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card border border-border/70 text-xs">
@@ -146,6 +156,32 @@ export function Navbar() {
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+      </div>
+
+      {/* Mobile Horizontal Navigation Scroll */}
+      <div className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-md px-2 py-1.5">
+        <ScrollArea className="w-full whitespace-nowrap">
+          <nav className="flex w-max items-center gap-1.5 px-1 py-0.5">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex shrink-0 items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full transition-all ${
+                    isActive
+                      ? 'bg-spa-rose/15 text-spa-rose font-semibold shadow-sm shadow-spa-rose/10'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  }`}
+                >
+                  {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </ScrollArea>
       </div>
 
       {/* Mobile menu drawer */}

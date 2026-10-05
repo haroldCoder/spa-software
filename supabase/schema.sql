@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS catalog_items (
     duration_minutes INT, -- Solo aplica para servicios (e.g. 60 min)
     stock_quantity INT, -- Solo aplica para productos físicos en stock
     sku VARCHAR(100),
+    image_url TEXT, -- Imagen del producto o servicio almacenada en bucket 'products'
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

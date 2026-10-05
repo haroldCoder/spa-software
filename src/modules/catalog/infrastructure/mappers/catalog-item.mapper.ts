@@ -13,6 +13,7 @@ export interface SupabaseCatalogItemRow {
   duration_minutes: number | null;
   stock_quantity: number | null;
   sku: string | null;
+  image_url: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -32,6 +33,7 @@ export class CatalogItemMapper {
       durationMinutes: row.duration_minutes !== null ? Number(row.duration_minutes) : null,
       stockQuantity: row.stock_quantity !== null ? Number(row.stock_quantity) : null,
       sku: row.sku,
+      imageUrl: row.image_url ?? null,
       isActive: row.is_active,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.updated_at),
@@ -50,6 +52,7 @@ export class CatalogItemMapper {
       duration_minutes: entity.durationMinutes ?? null,
       stock_quantity: entity.stockQuantity ?? null,
       sku: entity.sku ?? null,
+      image_url: entity.imageUrl ?? null,
       is_active: entity.isActive,
     };
     if (entity.id) {
@@ -71,6 +74,7 @@ export class CatalogItemMapper {
       durationMinutes: entity.durationMinutes ?? null,
       stockQuantity: entity.stockQuantity ?? null,
       sku: entity.sku ?? null,
+      imageUrl: entity.imageUrl ?? null,
       isActive: entity.isActive,
       createdAt: entity.createdAt ? entity.createdAt.toISOString() : new Date().toISOString(),
       updatedAt: entity.updatedAt ? entity.updatedAt.toISOString() : new Date().toISOString(),

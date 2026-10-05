@@ -14,6 +14,7 @@ export interface CatalogItemProps {
   durationMinutes?: number | null; // For services
   stockQuantity?: number | null;   // For products
   sku?: string | null;
+  imageUrl?: string | null;
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -31,6 +32,7 @@ export class CatalogItem {
   private _durationMinutes?: number | null;
   private _stockQuantity?: number | null;
   private _sku?: string | null;
+  private _imageUrl?: string | null;
   private _isActive: boolean;
   private readonly _createdAt?: Date;
   private _updatedAt?: Date;
@@ -47,6 +49,7 @@ export class CatalogItem {
     this._durationMinutes = props.durationMinutes ?? null;
     this._stockQuantity = props.stockQuantity ?? null;
     this._sku = props.sku ?? null;
+    this._imageUrl = props.imageUrl ?? null;
     this._isActive = props.isActive ?? true;
     this._createdAt = props.createdAt ?? new Date();
     this._updatedAt = props.updatedAt ?? new Date();
@@ -105,6 +108,9 @@ export class CatalogItem {
   public get sku(): string | null | undefined {
     return this._sku;
   }
+  public get imageUrl(): string | null | undefined {
+    return this._imageUrl;
+  }
   public get isActive(): boolean {
     return this._isActive;
   }
@@ -154,6 +160,7 @@ export class CatalogItem {
       this._stockQuantity = props.stockQuantity;
     }
     if (props.sku !== undefined) this._sku = props.sku;
+    if (props.imageUrl !== undefined) this._imageUrl = props.imageUrl;
     if (props.isActive !== undefined) this._isActive = props.isActive;
     this._updatedAt = new Date();
   }

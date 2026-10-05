@@ -13,6 +13,7 @@ export interface UploadCatalogImageDTO {
 
 export interface UploadCatalogImageResult {
   imageUrl: string;
+  publicUrl: string;
   fileName: string;
 }
 
@@ -72,6 +73,7 @@ export class UploadCatalogImageUseCase {
 
       return Result.ok({
         imageUrl,
+        publicUrl: imageUrl,
         fileName: dto.fileName,
       });
     } catch (error) {

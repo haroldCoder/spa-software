@@ -9,9 +9,12 @@ export class HttpClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const defaultHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    const defaultHeaders: Record<string, string> = isFormData
+      ? {}
+      : {
+          'Content-Type': 'application/json',
+        };
 
     const response = await fetch(endpoint, {
       credentials: 'same-origin',
@@ -47,10 +50,11 @@ export class HttpClient {
   }
 
   public static post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
     });
   }
 

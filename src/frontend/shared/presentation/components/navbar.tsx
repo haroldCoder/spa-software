@@ -32,8 +32,13 @@ export function Navbar() {
     ...(isAuthenticated && isOwner
       ? [
         { href: APP_ROUTES.DASHBOARD.ROOT, label: 'Panel del Spa', icon: LayoutDashboard },
+        { href: APP_ROUTES.SERVICIOS, label: 'Servicios', icon: Sparkles },
         { href: APP_ROUTES.DASHBOARD.REGISTER_WORKER, label: 'Registrar Trabajadora', icon: UserPlus },
         { href: APP_ROUTES.DASHBOARD.REGISTER_CLIENT, label: 'Registrar Cliente', icon: UserCheck },
+      ]
+      : isAuthenticated
+      ? [
+        { href: APP_ROUTES.SERVICIOS, label: 'Servicios', icon: Sparkles },
       ]
       : []),
     { href: APP_ROUTES.DOCS, label: 'Documentación API', icon: BookOpen },

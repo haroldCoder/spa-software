@@ -51,6 +51,34 @@ export class HttpResponse {
     );
   }
 
+  public static unauthorized(message = 'No autorizado', details?: unknown): NextResponse<ApiResponse<null>> {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          message,
+          code: 'UNAUTHORIZED',
+          details,
+        },
+      },
+      { status: 401 }
+    );
+  }
+
+  public static forbidden(message = 'Acceso prohibido', details?: unknown): NextResponse<ApiResponse<null>> {
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          message,
+          code: 'FORBIDDEN',
+          details,
+        },
+      },
+      { status: 403 }
+    );
+  }
+
   public static handleDomainError(error: DomainError): NextResponse<ApiResponse<null>> {
     return NextResponse.json(
       {

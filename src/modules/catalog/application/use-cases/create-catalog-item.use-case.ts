@@ -33,6 +33,7 @@ export class CreateCatalogItemUseCase {
         durationMinutes: dto.durationMinutes,
         stockQuantity: dto.stockQuantity,
         sku: dto.sku,
+        imageUrl: dto.imageUrl,
         isActive: true,
       });
 

@@ -13,6 +13,8 @@ export const CreateCatalogItemSchema = z.object({
   durationMinutes: z.number().int().positive('La duración debe ser mayor a 0 minutos').optional().nullable(),
   stockQuantity: z.number().int().min(0, 'El stock no puede ser negativo').optional().nullable(),
   sku: z.string().optional().nullable(),
+  imageUrl: z
+    .preprocess((val) => (val === '' || val === undefined ? null : val), z.string().nullable().optional()),
 });
 
 export const UpdateCatalogItemSchema = CreateCatalogItemSchema.omit({ businessId: true }).partial().extend({
@@ -34,6 +36,7 @@ export interface CatalogItemResponseDTO {
   durationMinutes: number | null;
   stockQuantity: number | null;
   sku: string | null;
+  imageUrl: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

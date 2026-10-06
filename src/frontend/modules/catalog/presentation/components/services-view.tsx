@@ -1,14 +1,20 @@
 'use client';
 
 import * as React from 'react';
-import { Sparkles, X, AlertTriangle, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { Sparkles, X, AlertTriangle, RefreshCw, Lock, LayoutDashboard, Calendar } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
+import { Card } from '@/src/components/ui/card';
+import { useCurrentUser } from '@/src/frontend/modules/auth/application/use-current-user';
 import { useCatalog } from '../../application/use-catalog';
 import { ServicesHeader } from './services-header';
 import { CatalogCardsGrid } from './catalog-cards-grid';
 import { RegisterCatalogForm } from './register-catalog-form';
 
 export function ServicesView() {
+  const { user, isAuthenticated } = useCurrentUser();
+  const isOwner = user?.role === 'BUSINESS_OWNER' || user?.userType === 'BUSINESS';
+
   const {
     items,
     filteredItems,
@@ -25,6 +31,39 @@ export function ServicesView() {
   } = useCatalog();
 
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+
+  // Restrict view if user is a worker
+  if (isAuthenticated && !isOwner) {
+    return (
+      <div className="py-16 max-w-lg mx-auto text-center px-4">
+        <Card className="border-border/80 shadow-xl p-8">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-4">
+            <Lock className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-serif font-bold text-foreground">
+            Acceso Restringido
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+            La administración del catálogo de servicios y productos está reservada para el propietario del spa. Como colaboradora, tu acceso está habilitado únicamente para el <strong>Panel de Control</strong> y la <strong>Agenda de Citas</strong>.
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/dashboard" className="w-full sm:w-auto">
+              <Button size="sm" variant="default" className="w-full gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Panel del Spa</span>
+              </Button>
+            </Link>
+            <Link href="/citas" className="w-full sm:w-auto">
+              <Button size="sm" variant="outline" className="w-full gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>Ver Mis Citas</span>
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const handleCreated = () => {
     setIsCreateOpen(false);

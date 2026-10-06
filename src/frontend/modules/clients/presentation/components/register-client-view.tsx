@@ -51,6 +51,32 @@ export function RegisterClientView() {
     );
   }
 
+  if (!isOwner) {
+    return (
+      <div className="py-16 max-w-lg mx-auto text-center px-4">
+        <Card className="border-border/80 shadow-xl p-8">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-4">
+            <Lock className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-serif font-bold text-foreground">
+            Acceso Restringido
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+            El registro de nuevos clientes está reservado para la administración del spa. Como colaboradora, tu gestión se concentra en el <strong>Panel de Control</strong> y la <strong>Agenda de Citas</strong>.
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href={APP_ROUTES.DASHBOARD.ROOT}>
+              <Button size="sm">Ir al Panel del Spa</Button>
+            </Link>
+            <Link href={APP_ROUTES.APPOINTMENTS}>
+              <Button size="sm" variant="outline">Ver Mis Citas</Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   const businessId = currentUser.businessId;
   const spaName = business?.name || 'Tu Spa';
   // If logged in as worker, default fixedWorkerId to their own ID

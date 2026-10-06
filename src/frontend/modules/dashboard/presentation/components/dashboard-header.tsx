@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
 import { BusinessProfile } from '../../domain/dashboard.types';
@@ -10,8 +11,8 @@ import {
   FileText,
   UserPlus,
   RefreshCw,
-  BookOpen,
   ShieldCheck,
+  Calendar,
 } from 'lucide-react';
 
 interface DashboardHeaderProps {
@@ -19,6 +20,7 @@ interface DashboardHeaderProps {
   ownerName?: string;
   isRefreshing?: boolean;
   onRefresh: () => void;
+  isOwner?: boolean;
 }
 
 export function DashboardHeader({
@@ -26,6 +28,7 @@ export function DashboardHeader({
   ownerName,
   isRefreshing,
   onRefresh,
+  isOwner = true,
 }: DashboardHeaderProps) {
   const spaName = business?.name || 'Tu Spa';
 
@@ -36,7 +39,7 @@ export function DashboardHeader({
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <Badge variant="spa" className="text-xs px-2.5 py-0.5 font-semibold">
               <Sparkles className="h-3 w-3 mr-1" />
-              Dueño de Spa &middot; Administrador
+              {isOwner ? 'Dueño de Spa · Administrador' : 'Colaboradora del Spa'}
             </Badge>
             <Badge variant="success" className="text-xs">
               <ShieldCheck className="h-3 w-3 mr-1" />
@@ -49,8 +52,10 @@ export function DashboardHeader({
           </h1>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            {ownerName ? `Bienvenido, ${ownerName}. ` : 'Bienvenido. '}
-            Resumen operativo y métricas en tiempo real de tu equipo de trabajadoras y clientes.
+            {ownerName ? `Bienvenid${isOwner ? 'o' : 'a'}, ${ownerName}. ` : 'Bienvenido. '}
+            {isOwner
+              ? 'Resumen operativo y métricas en tiempo real de tu equipo de trabajadoras y clientes.'
+              : 'Panel operativo y directorio de colaboradoras y clientes del spa.'}
           </p>
 
           {/* Business Meta details */}
@@ -93,10 +98,21 @@ export function DashboardHeader({
             <span>Actualizar</span>
           </Button>
 
-          <Button size="sm" variant="secondary" className="gap-2">
-            <UserPlus className="h-4 w-4 text-spa-rose" />
-            <span>Vincular Trabajadora</span>
-          </Button>
+          {isOwner ? (
+            <Link href="/dashboard/register-worker">
+              <Button size="sm" variant="secondary" className="gap-2">
+                <UserPlus className="h-4 w-4 text-spa-rose" />
+                <span>Vincular Trabajadora</span>
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/citas">
+              <Button size="sm" variant="secondary" className="gap-2">
+                <Calendar className="h-4 w-4 text-spa-rose" />
+                <span>Ver Mis Citas</span>
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

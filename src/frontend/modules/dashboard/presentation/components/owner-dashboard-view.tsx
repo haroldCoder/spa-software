@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import Link from 'next/link';
 import { useOwnerDashboard } from '../../application/use-owner-dashboard';
 import { DashboardHeader } from './dashboard-header';
@@ -8,16 +7,12 @@ import { MetricCards } from './metric-cards';
 import { WorkersTableCard } from './workers-table-card';
 import { ClientsTableCard } from './clients-table-card';
 import { Button } from '@/src/components/ui/button';
-import { Card, CardContent } from '@/src/components/ui/card';
-import { Badge } from '@/src/components/ui/badge';
+import { Card } from '@/src/components/ui/card';
 import {
-  Sparkles,
   Loader2,
   Lock,
   LogIn,
   UserPlus,
-  AlertCircle,
-  Building2,
 } from 'lucide-react';
 
 export function OwnerDashboardView() {
@@ -84,34 +79,7 @@ export function OwnerDashboardView() {
     );
   }
 
-  // 3. Worker User attempting to access Owner dashboard
-  if (!isOwner) {
-    return (
-      <div className="py-16 max-w-lg mx-auto text-center px-4">
-        <Card className="border-border/80 shadow-xl p-8">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-spa-gold/10 text-spa-gold mb-4">
-            <Building2 className="h-7 w-7" />
-          </div>
-          <h2 className="text-xl font-serif font-bold text-foreground">
-            Panel de Propietario de Spa
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-            Has iniciado sesión con una cuenta de <strong>Trabajadora</strong> ({currentUser.email}). Este panel administrativo es exclusivo para propietarios de spas.
-          </p>
-          <div className="mt-6">
-            <Link href="/docs">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                <span>Explorar API</span>
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  // 4. Authenticated Spa Owner Dashboard
+  // 3. Authenticated Dashboard (Both Owners and Workers)
   const businessId = currentUser.businessId;
 
   return (
@@ -120,6 +88,7 @@ export function OwnerDashboardView() {
       <DashboardHeader
         business={business}
         ownerName={currentUser.name}
+        isOwner={isOwner}
         onRefresh={refetchAll}
       />
 

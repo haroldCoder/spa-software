@@ -38,10 +38,21 @@ export function OwnerRegisterWorkerView() {
           <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
             Debes haber iniciado sesión como dueño de un Spa para poder registrar colaboradoras en tu negocio.
           </p>
-          <div className="mt-6">
-            <Link href={APP_ROUTES.AUTH.LOGIN}>
-              <Button size="sm">Iniciar Sesión</Button>
-            </Link>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+            {!currentUser ? (
+              <Link href={APP_ROUTES.AUTH.LOGIN}>
+                <Button size="sm">Iniciar Sesión</Button>
+              </Link>
+            ) : (
+              <>
+                <Link href={APP_ROUTES.DASHBOARD.ROOT}>
+                  <Button size="sm">Ir al Panel del Spa</Button>
+                </Link>
+                <Link href={APP_ROUTES.APPOINTMENTS}>
+                  <Button size="sm" variant="outline">Ver Mis Citas</Button>
+                </Link>
+              </>
+            )}
           </div>
         </Card>
       </div>

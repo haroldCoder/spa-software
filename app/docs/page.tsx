@@ -1,11 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import Script from 'next/script';
-import Head from 'next/head';
+import { Lock } from 'lucide-react';
 import { swaggerSpec } from '@/src/docs/swagger-spec';
+import { useCurrentUser } from '@/src/frontend/modules/auth/application/use-current-user';
 
 export default function SwaggerDocsPage() {
+  const { user, isAuthenticated, isLoading } = useCurrentUser();
+  const isOwner = user?.role === 'BUSINESS_OWNER' || user?.userType === 'BUSINESS';
+
   const initSwagger = () => {
     if (typeof window !== 'undefined' && (window as unknown as { SwaggerUIBundle?: (config: unknown) => void }).SwaggerUIBundle) {
       const SwaggerUIBundle = (window as unknown as { SwaggerUIBundle: (config: unknown) => void }).SwaggerUIBundle;
@@ -27,8 +32,40 @@ export default function SwaggerDocsPage() {
   };
 
   useEffect(() => {
-    initSwagger();
-  }, []);
+    if (isOwner || !isAuthenticated) {
+      initSwagger();
+    }
+  }, [isOwner, isAuthenticated]);
+
+  if (!isLoading && isAuthenticated && !isOwner) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-slate-800 border border-slate-700 rounded-2xl p-8 text-center shadow-2xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-400 mb-4">
+            <Lock className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-bold text-white">Acceso Restringido</h2>
+          <p className="mt-2 text-sm text-slate-400">
+            La documentación técnica de la API está reservada para la administración del spa. Como colaboradora, tu acceso está habilitado para el Panel del Spa y la Agenda de Citas.
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold"
+            >
+              Panel del Spa
+            </Link>
+            <Link
+              href="/citas"
+              className="px-4 py-2 rounded-lg border border-slate-600 hover:bg-slate-700 text-white text-xs font-semibold"
+            >
+              Ver Citas
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">

@@ -23,6 +23,38 @@ export class HttpResponse {
     );
   }
 
+  public static paginated<T>(
+    items: T[],
+    total: number,
+    page: number,
+    limit: number,
+    status = 200
+  ): NextResponse<
+    ApiResponse<{
+      items: T[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    }>
+  > {
+    const totalPages = Math.ceil(total / limit) || (total === 0 ? 0 : 1);
+    return this.ok(
+      {
+        items,
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+      status
+    );
+  }
+
   public static created<T>(data: T): NextResponse<ApiResponse<T>> {
     return NextResponse.json(
       {

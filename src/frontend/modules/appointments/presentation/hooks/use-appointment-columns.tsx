@@ -1,24 +1,25 @@
-'use client';
-
 import * as React from 'react';
 import { AppointmentItem } from '../../domain/appointment.types';
 import { AppointmentStatusSelect } from '../components/appointment-status-select';
 import { ColumnDef } from '@/src/frontend/shared/presentation/components/data-table';
+import { Button } from '@/src/components/ui/button';
+import { cn } from '@/src/lib/utils';
 import {
   Calendar,
   Clock,
   User,
   Scissors,
-  FileText,
-  AlertCircle,
+  Eye,
 } from 'lucide-react';
 
 interface UseAppointmentColumnsOptions {
   currency?: string;
+  onViewNote?: (appointment: AppointmentItem) => void;
 }
 
 export function useAppointmentColumns({
   currency = 'COP',
+  onViewNote,
 }: UseAppointmentColumnsOptions = {}): ColumnDef<AppointmentItem>[] {
   const formatDateTime = React.useCallback((dateStr: string) => {
     try {
@@ -190,39 +191,36 @@ export function useAppointmentColumns({
       {
         id: 'notes',
         header: 'Notas',
-        headerClassName: 'py-3.5 px-4 font-semibold text-[11px] uppercase tracking-wider text-right',
-        className: 'py-3.5 px-4 text-right',
+        headerClassName: 'py-3.5 px-4 font-semibold text-[11px] uppercase tracking-wider text-center',
+        className: 'py-3.5 px-4 text-center',
         cell: (item) => {
-          if (item.notes) {
-            return (
-              <span
-                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground cursor-help"
-                title={item.notes}
+          const hasNotes = Boolean(item.notes?.trim() || item.cancellationReason?.trim());
+          return (
+            <div className="flex items-center justify-center">
+              <Button
+                type="button"
+                variant={hasNotes ? 'outline' : 'ghost'}
+                size="sm"
+                onClick={() => onViewNote?.(item)}
+                className={cn(
+                  'h-7 px-2.5 text-xs font-medium gap-1.5 transition-all shadow-none',
+                  hasNotes
+                    ? 'border-spa-rose/30 text-spa-rose hover:bg-spa-rose/10 hover:text-spa-rose'
+                    : 'text-muted-foreground hover:bg-muted/60'
+                )}
+                title={hasNotes ? 'Ver notas de la cita' : 'Ver detalle (sin notas)'}
               >
-                <FileText className="h-3.5 w-3.5 text-spa-rose" />
-                <span className="max-w-[80px] truncate hidden sm:inline">
-                  {item.notes}
-                </span>
-              </span>
-            );
-          }
-          if (item.cancellationReason) {
-            return (
-              <span
-                className="inline-flex items-center gap-1 text-[11px] text-destructive cursor-help"
-                title={`Motivo: ${item.cancellationReason}`}
-              >
-                <AlertCircle className="h-3.5 w-3.5" />
-                <span className="max-w-[80px] truncate hidden sm:inline">
-                  {item.cancellationReason}
-                </span>
-              </span>
-            );
-          }
-          return <span className="text-muted-foreground/50 text-xs">-</span>;
+                <Eye className="h-3.5 w-3.5" />
+                <span>Ver</span>
+                {hasNotes && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-spa-rose shrink-0" />
+                )}
+              </Button>
+            </div>
+          );
         },
       },
     ],
-    [formatDateTime, formatPrice]
+    [formatDateTime, formatPrice, onViewNote]
   );
 }

@@ -42,6 +42,10 @@ export const swaggerSpec = {
       name: 'Catálogo (Catalog)',
       description: 'Servicios ofrecidos (con duración) y productos en stock (con SKU)',
     },
+    {
+      name: 'Citas (Appointments)',
+      description: 'Gestión y reserva de citas entre usuarios (Dueño del Spa o Trabajadoras) y Clientes',
+    },
   ],
   paths: {
     '/api/auth/register': {
@@ -1218,6 +1222,349 @@ export const swaggerSpec = {
         },
       },
     },
+    '/api/appointments': {
+      post: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Reservar o agendar una nueva cita',
+        description: 'Crea una cita entre usuario (dueño o trabajadora) y un cliente. Permite asignar servicio del catálogo, fecha, hora, duración y notas. Valida que no existan conflictos o solapamientos de horario para la trabajadora.',
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateAppointmentDTO' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Cita reservada exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/AppointmentResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: 'Datos inválidos (BadRequestError)',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
+              },
+            },
+          },
+          409: {
+            description: 'Conflicto de horario / solapamiento (ConflictError)',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
+              },
+            },
+          },
+        },
+      },
+      get: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Listar citas con filtros',
+        description: 'Obtiene las citas del negocio del usuario autenticado con filtros opcionales por trabajadora, cliente, estado o rango de fechas.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'workerId',
+            in: 'query',
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Filtrar citas de una trabajadora en específico',
+          },
+          {
+            name: 'clientId',
+            in: 'query',
+            schema: { type: 'string', format: 'uuid' },
+            description: 'Filtrar citas de un cliente en específico',
+          },
+          {
+            name: 'status',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por estado (PENDING, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW)',
+          },
+          {
+            name: 'startDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Fecha mínima de inicio',
+          },
+          {
+            name: 'endDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Fecha máxima de inicio',
+          },
+          {
+            name: 'page',
+            in: 'query',
+            schema: { type: 'integer', default: 1, minimum: 1 },
+            description: 'Número de página para paginación',
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', default: 10, minimum: 1, maximum: 100 },
+            description: 'Cantidad de registros por página',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Lista paginada de citas obtenida exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/PaginatedAppointmentsResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/appointments/{id}': {
+      get: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Consultar cita por ID',
+        description: 'Obtiene el detalle completo de una cita incluyendo información del cliente, trabajadora y servicio asociado.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Cita encontrada',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/AppointmentResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+          404: {
+            description: 'Cita no encontrada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ApiErrorResponse' },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Actualizar cita por ID',
+        description: 'Permite reprogramar la cita (fecha/hora), reasignar trabajadora, cambiar servicio, precio o notas.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateAppointmentDTO' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Cita actualizada exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/AppointmentResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Eliminar cita por ID',
+        description: 'Elimina permanentemente una cita del sistema.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          204: {
+            description: 'Cita eliminada exitosamente (No Content)',
+          },
+        },
+      },
+    },
+    '/api/appointments/{id}/status': {
+      patch: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Cambiar estado de una cita',
+        description: 'Actualiza el estado de la cita (CONFIRMED, COMPLETED, CANCELLED, NO_SHOW). Si se cancela, se puede registrar el motivo.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UpdateAppointmentStatusDTO' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Estado de la cita actualizado exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/AppointmentResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/businesses/{id}/appointments': {
+      get: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Listar citas del negocio',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Citas del negocio obtenidas exitosamente',
+          },
+        },
+      },
+      post: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Agendar cita en el negocio',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateAppointmentDTO' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Cita agendada exitosamente',
+          },
+        },
+      },
+    },
+    '/api/workers/{id}/appointments': {
+      get: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Listar citas de una trabajadora',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Citas de la trabajadora obtenidas exitosamente',
+          },
+        },
+      },
+      post: {
+        tags: ['Citas (Appointments)'],
+        summary: 'Agendar cita con la trabajadora',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateAppointmentDTO' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Cita agendada exitosamente',
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -1531,6 +1878,117 @@ export const swaggerSpec = {
               expiresAt: { type: 'string', format: 'date-time' },
             },
           },
+        },
+      },
+      CreateAppointmentDTO: {
+        type: 'object',
+        required: ['businessId', 'clientId', 'scheduledAt'],
+        properties: {
+          businessId: { type: 'string', format: 'uuid', example: 'd3b07384-d113-400a-b3e3-784f183c5093' },
+          clientId: { type: 'string', format: 'uuid', example: 'e7b07384-d113-400a-b3e3-784f183c5094' },
+          workerId: { type: 'string', format: 'uuid', nullable: true, example: 'a1b07384-d113-400a-b3e3-784f183c5095' },
+          serviceId: { type: 'string', format: 'uuid', nullable: true, example: 'c2b07384-d113-400a-b3e3-784f183c5096' },
+          scheduledAt: { type: 'string', format: 'date-time', example: '2026-10-10T15:00:00Z' },
+          durationMinutes: { type: 'integer', example: 60 },
+          price: { type: 'number', example: 85000.0 },
+          notes: { type: 'string', nullable: true, example: 'Cliente prefiere esmalte semipermanente tono pastel.' },
+        },
+      },
+      UpdateAppointmentDTO: {
+        type: 'object',
+        properties: {
+          workerId: { type: 'string', format: 'uuid', nullable: true },
+          serviceId: { type: 'string', format: 'uuid', nullable: true },
+          scheduledAt: { type: 'string', format: 'date-time', example: '2026-10-10T16:00:00Z' },
+          durationMinutes: { type: 'integer', example: 90 },
+          price: { type: 'number', example: 95000.0 },
+          notes: { type: 'string', nullable: true },
+        },
+      },
+      UpdateAppointmentStatusDTO: {
+        type: 'object',
+        required: ['status'],
+        properties: {
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'],
+            example: 'CONFIRMED',
+          },
+          cancellationReason: { type: 'string', nullable: true, example: 'El cliente canceló por viaje.' },
+        },
+      },
+      AppointmentResponseDTO: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid', example: 'f4b07384-d113-400a-b3e3-784f183c5097' },
+          businessId: { type: 'string', format: 'uuid' },
+          workerId: { type: 'string', format: 'uuid', nullable: true },
+          clientId: { type: 'string', format: 'uuid' },
+          serviceId: { type: 'string', format: 'uuid', nullable: true },
+          scheduledAt: { type: 'string', format: 'date-time' },
+          durationMinutes: { type: 'integer', example: 60 },
+          endTime: { type: 'string', format: 'date-time' },
+          status: {
+            type: 'string',
+            enum: ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW'],
+            example: 'CONFIRMED',
+          },
+          price: { type: 'number', example: 85000.0 },
+          notes: { type: 'string', nullable: true },
+          cancellationReason: { type: 'string', nullable: true },
+          createdById: { type: 'string', nullable: true },
+          createdByRole: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          client: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              firstName: { type: 'string', example: 'Camila' },
+              lastName: { type: 'string', example: 'Gómez' },
+              phone: { type: 'string', example: '+57 310 987 6543' },
+              email: { type: 'string', nullable: true, example: 'camila@gmail.com' },
+            },
+          },
+          worker: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              firstName: { type: 'string', example: 'Valeria' },
+              lastName: { type: 'string', example: 'Restrepo' },
+              specialty: { type: 'string', nullable: true, example: 'Manicurista' },
+              phone: { type: 'string', example: '+57 320 123 4567' },
+            },
+          },
+          service: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'string', example: 'Manicura Rusa Spa' },
+              category: { type: 'string', nullable: true, example: 'Uñas' },
+              price: { type: 'number', example: 85000.0 },
+              durationMinutes: { type: 'integer', nullable: true, example: 60 },
+              imageUrl: { type: 'string', nullable: true },
+            },
+          },
+        },
+      },
+      PaginatedAppointmentsResponseDTO: {
+        type: 'object',
+        properties: {
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/AppointmentResponseDTO' },
+          },
+          total: { type: 'integer', example: 45 },
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 10 },
+          totalPages: { type: 'integer', example: 5 },
+          hasNextPage: { type: 'boolean', example: true },
+          hasPrevPage: { type: 'boolean', example: false },
         },
       },
       ApiErrorResponse: {

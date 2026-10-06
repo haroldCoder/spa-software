@@ -14,8 +14,10 @@ export const APP_ROUTES = {
     REGISTER_WORKER: '/dashboard/register-worker',
     REGISTER_CLIENT: '/dashboard/register-client',
     SERVICES: '/dashboard/servicios',
+    APPOINTMENTS: '/dashboard/citas',
   },
-  SERVICIOS: '/servicios',
+  APPOINTMENTS: '/citas',
+  SERVICES: '/servicios',
   DOCS: '/docs',
 } as const;
 

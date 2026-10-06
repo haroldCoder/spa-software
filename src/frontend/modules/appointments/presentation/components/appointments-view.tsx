@@ -7,6 +7,7 @@ import { useAppointments } from '../../application/use-appointments';
 import { AppointmentStatus } from '../../domain/appointment.types';
 import { AppointmentsHeader } from './appointments-header';
 import { AppointmentsTable } from './appointments-table';
+import { BookAppointmentForm } from './book-appointment-form';
 import { Card } from '@/src/components/ui/card';
 import { Button } from '@/src/components/ui/button';
 import { Lock, LogIn, Loader2, UserPlus } from 'lucide-react';
@@ -15,6 +16,9 @@ export function AppointmentsView() {
   const { user, isAuthenticated, isLoading: isUserLoading } = useCurrentUser();
 
   const isOwner = user?.role === 'BUSINESS_OWNER' || user?.userType === 'BUSINESS';
+
+  // Toggle state to schedule an appointment in the same view
+  const [isCreating, setIsCreating] = React.useState<boolean>(false);
 
   // Filters state with 10-item limit fixed as requested
   const [page, setPage] = React.useState<number>(1);
@@ -106,20 +110,33 @@ export function AppointmentsView() {
         isRefreshing={isFetching}
         onRefresh={() => refetch()}
         userName={user.name}
+        isCreating={isCreating}
+        onToggleCreate={() => setIsCreating((prev) => !prev)}
       />
 
-      <AppointmentsTable
-        appointments={items}
-        isLoading={isAppointmentsLoading}
-        page={page}
-        limit={10}
-        total={total}
-        totalPages={totalPages}
-        hasNextPage={hasNextPage}
-        hasPrevPage={hasPrevPage}
-        onPageChange={handlePageChange}
-        userRole={user.role}
-      />
+      {isCreating ? (
+        <BookAppointmentForm
+          onSuccess={() => {
+            // When successfully booked, immediately switch back to the table view
+            setIsCreating(false);
+            refetch();
+          }}
+          onCancel={() => setIsCreating(false)}
+        />
+      ) : (
+        <AppointmentsTable
+          appointments={items}
+          isLoading={isAppointmentsLoading}
+          page={page}
+          limit={10}
+          total={total}
+          totalPages={totalPages}
+          hasNextPage={hasNextPage}
+          hasPrevPage={hasPrevPage}
+          onPageChange={handlePageChange}
+          userRole={user.role}
+        />
+      )}
     </div>
   );
 }

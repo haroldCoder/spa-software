@@ -8,6 +8,8 @@ import {
   RefreshCw,
   Sparkles,
   Filter,
+  CalendarPlus,
+  ArrowLeft,
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
@@ -19,6 +21,8 @@ interface AppointmentsHeaderProps {
   isRefreshing: boolean;
   onRefresh: () => void;
   userName?: string;
+  isCreating: boolean;
+  onToggleCreate: () => void;
 }
 
 export function AppointmentsHeader({
@@ -29,6 +33,8 @@ export function AppointmentsHeader({
   isRefreshing,
   onRefresh,
   userName,
+  isCreating,
+  onToggleCreate,
 }: AppointmentsHeaderProps) {
   const filterTabs: { value: AppointmentStatus | 'ALL'; label: string }[] = [
     { value: 'ALL', label: 'Todas' },
@@ -73,38 +79,58 @@ export function AppointmentsHeader({
               <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin')} />
               <span>Actualizar</span>
             </Button>
+
+            <Button
+              size="sm"
+              onClick={onToggleCreate}
+              className="gap-2 bg-gradient-to-r from-spa-rose to-spa-blush text-white hover:opacity-90 shadow-md shadow-spa-rose/25 cursor-pointer"
+            >
+              {isCreating ? (
+                <>
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Ver Tabla</span>
+                </>
+              ) : (
+                <>
+                  <CalendarPlus className="h-4 w-4" />
+                  <span>Agendar Cita</span>
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Filter Tabs by Status */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        <div className="flex items-center gap-1.5 px-1 py-1 rounded-xl bg-card border border-border/70 w-full sm:w-auto">
-          <div className="px-2 py-1 text-xs text-muted-foreground flex items-center gap-1">
-            <Filter className="h-3 w-3" />
-            <span className="hidden sm:inline">Filtrar:</span>
-          </div>
+      {/* Filter Tabs by Status (only show when not in create view) */}
+      {!isCreating && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex items-center gap-1.5 px-1 py-1 rounded-xl bg-card border border-border/70 w-full sm:w-auto">
+            <div className="px-2 py-1 text-xs text-muted-foreground flex items-center gap-1">
+              <Filter className="h-3 w-3" />
+              <span className="hidden sm:inline">Filtrar:</span>
+            </div>
 
-          {filterTabs.map((tab) => {
-            const isActive = currentStatusFilter === tab.value;
-            return (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => onStatusFilterChange(tab.value)}
-                className={cn(
-                  'px-3 py-1 text-xs font-medium rounded-lg transition-all whitespace-nowrap cursor-pointer',
-                  isActive
-                    ? 'bg-spa-rose text-white font-semibold shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                )}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
+            {filterTabs.map((tab) => {
+              const isActive = currentStatusFilter === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => onStatusFilterChange(tab.value)}
+                  className={cn(
+                    'px-3 py-1 text-xs font-medium rounded-lg transition-all whitespace-nowrap cursor-pointer',
+                    isActive
+                      ? 'bg-spa-rose text-white font-semibold shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

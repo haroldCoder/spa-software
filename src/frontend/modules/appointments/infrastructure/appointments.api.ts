@@ -3,6 +3,7 @@ import {
   AppointmentFilters,
   AppointmentItem,
   AppointmentStatus,
+  CreateAppointmentPayload,
   PaginatedAppointmentsResponse,
 } from '../domain/appointment.types';
 
@@ -53,7 +54,14 @@ export async function updateAppointmentStatus(
   });
 }
 
+export async function createAppointment(
+  payload: CreateAppointmentPayload
+): Promise<AppointmentItem> {
+  return HttpClient.post<AppointmentItem>('/api/appointments', payload);
+}
+
 export const AppointmentsApi = {
   getAppointments,
   updateAppointmentStatus,
+  createAppointment,
 };

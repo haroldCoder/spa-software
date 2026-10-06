@@ -73,3 +73,14 @@ export interface AppointmentFilters {
   endDate?: string;
   searchQuery?: string;
 }
+
+export interface CreateAppointmentPayload {
+  businessId: string;
+  clientId: string;
+  workerId?: string | null;
+  serviceId?: string | null;
+  scheduledAt: string;
+  durationMinutes?: number;
+  price?: number;
+  notes?: string | null;
+}

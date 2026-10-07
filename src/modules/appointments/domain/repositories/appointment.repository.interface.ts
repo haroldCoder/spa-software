@@ -25,6 +25,7 @@ export interface IAppointmentRepository {
     endTime: Date,
     excludeAppointmentId?: string
   ): Promise<Appointment[]>;
+  findByCompletedStatus(businessId: string): Promise<Appointment[]>;
   save(appointment: Appointment): Promise<Appointment>;
   update(appointment: Appointment): Promise<Appointment>;
   delete(id: string): Promise<void>;

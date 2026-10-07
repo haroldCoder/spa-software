@@ -12,6 +12,7 @@ import { ListAppointmentsByWorkerUseCase } from '../../application/use-cases/lis
 import { UpdateAppointmentUseCase } from '../../application/use-cases/update-appointment.use-case';
 import { UpdateAppointmentStatusUseCase } from '../../application/use-cases/update-appointment-status.use-case';
 import { DeleteAppointmentUseCase } from '../../application/use-cases/delete-appointment.use-case';
+import { ListCompletedAppointmentsUseCase } from '../../application/use-cases/list-completed-appointments.use-case';
 import {
   CreateAppointmentSchema,
   UpdateAppointmentSchema,
@@ -47,6 +48,7 @@ export class AppointmentController {
       updateAppointmentUseCase: new UpdateAppointmentUseCase(appointmentRepo, workerRepo, catalogRepo),
       updateAppointmentStatusUseCase: new UpdateAppointmentStatusUseCase(appointmentRepo),
       deleteAppointmentUseCase: new DeleteAppointmentUseCase(appointmentRepo),
+      listCompletedAppointmentsUseCase: new ListCompletedAppointmentsUseCase(appointmentRepo, businessRepo),
     };
   }
 
@@ -224,6 +226,35 @@ export class AppointmentController {
       const dtos = paginated.items.map((r) => AppointmentMapper.rowToDTO(r));
 
       return HttpResponse.paginated(dtos, paginated.total, paginated.page, paginated.limit);
+    } catch (error) {
+      return HttpResponse.handleGenericError(error);
+    }
+  }
+
+  public static async listCompleted(
+    request: NextRequest,
+    businessIdFromParams?: string
+  ): Promise<NextResponse> {
+    try {
+      const auth = await authenticateRequest(request);
+      const businessId =
+        businessIdFromParams ||
+        request.nextUrl.searchParams.get('businessId') ||
+        auth.user.businessId;
+
+      if (!businessId) {
+        return HttpResponse.badRequest('Se requiere el ID del negocio para consultar las citas completadas.');
+      }
+
+      if (auth.user.businessId !== businessId) {
+        return HttpResponse.forbidden('No tienes permisos para consultar citas de otro negocio.');
+      }
+
+      const { appointmentRepo } = this.getUseCases();
+      const rows = await appointmentRepo.findByCompletedStatusWithRelations(businessId);
+      const dtos = rows.map((r) => AppointmentMapper.rowToDTO(r));
+
+      return HttpResponse.ok(dtos);
     } catch (error) {
       return HttpResponse.handleGenericError(error);
     }

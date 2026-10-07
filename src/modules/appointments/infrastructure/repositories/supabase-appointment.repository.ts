@@ -205,6 +205,29 @@ export class SupabaseAppointmentRepository implements IAppointmentRepository {
     return (data as unknown as SupabaseAppointmentRow[]).map(AppointmentMapper.toDomain);
   }
 
+  public async findByCompletedStatus(businessId: string): Promise<Appointment[]> {
+    const rows = await this.findByCompletedStatusWithRelations(businessId);
+    return rows.map(AppointmentMapper.toDomain);
+  }
+
+  public async findByCompletedStatusWithRelations(businessId: string): Promise<SupabaseAppointmentRow[]> {
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .select(this.selectFields)
+      .eq('business_id', businessId)
+      .eq('status', 'COMPLETED')
+      .order('scheduled_at', { ascending: false });
+
+    if (error) {
+      throw new DatabaseError(
+        `Error al consultar citas completadas del negocio ${businessId}: ${error.message}`,
+        error
+      );
+    }
+
+    return (data as unknown as SupabaseAppointmentRow[]) || [];
+  }
+
   public async save(appointment: Appointment): Promise<Appointment> {
     const row = AppointmentMapper.toPersistence(appointment);
 

@@ -18,5 +18,6 @@ export interface ISaleRepository {
   findByBusinessId(businessId: string, filter?: SaleFilter): Promise<PaginatedSales>;
   findByClientId(clientId: string, filter?: SaleFilter): Promise<PaginatedSales>;
   findByWorkerId(workerId: string, filter?: SaleFilter): Promise<PaginatedSales>;
+  findCompletedServices(businessId: string): Promise<Sale[]>;
   save(sale: Sale): Promise<Sale>;
 }

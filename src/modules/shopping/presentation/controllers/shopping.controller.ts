@@ -13,11 +13,13 @@ import { SaleFilter } from '../../domain/repositories/sale.repository.interface'
 import { SaleMapper } from '../../infrastructure/mappers/sale.mapper';
 import { HttpResponse } from '@/src/shared/presentation/http-response';
 import { authenticateRequest } from '@/src/modules/auth/presentation/middlewares/auth.guard';
+import { SupabaseAppointmentRepository } from '@/src/modules/appointments/infrastructure/repositories/supabase-appointment.repository';
 
 export class ShoppingController {
   private static getUseCases() {
     const supabase = getSupabaseServerClient();
-    const saleRepo = new SupabaseSaleRepository(supabase);
+    const appointmentRepo = new SupabaseAppointmentRepository(supabase);
+    const saleRepo = new SupabaseSaleRepository(supabase, appointmentRepo);
     const businessRepo = new SupabaseBusinessRepository(supabase);
     const clientRepo = new SupabaseClientRepository(supabase);
     const workerRepo = new SupabaseWorkerRepository(supabase);
@@ -217,6 +219,35 @@ export class ShoppingController {
 
       const dto = SaleMapper.rowToDTO(row);
       return HttpResponse.ok(dto);
+    } catch (error) {
+      return HttpResponse.handleGenericError(error);
+    }
+  }
+
+  public static async listCompletedServices(
+    request: NextRequest,
+    businessIdFromParams?: string
+  ): Promise<NextResponse> {
+    try {
+      const auth = await authenticateRequest(request);
+      const businessId =
+        businessIdFromParams ||
+        request.nextUrl.searchParams.get('businessId') ||
+        auth.user.businessId;
+
+      if (!businessId) {
+        return HttpResponse.badRequest('Se requiere el ID del negocio para consultar los servicios completados.');
+      }
+
+      if (auth.user.businessId !== businessId) {
+        return HttpResponse.forbidden('No tienes permisos para consultar ventas de otro negocio.');
+      }
+
+      const { saleRepo } = this.getUseCases();
+      const rows = await saleRepo.findCompletedServicesWithRelations(businessId);
+      const dtos = rows.map((r) => SaleMapper.rowToDTO(r));
+
+      return HttpResponse.ok(dtos);
     } catch (error) {
       return HttpResponse.handleGenericError(error);
     }

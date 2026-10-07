@@ -14,6 +14,7 @@ import {
   LogOut,
   LayoutDashboard,
   Calendar,
+  ShoppingBag,
 } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
@@ -43,6 +44,7 @@ export function Navbar() {
           { href: APP_ROUTES.DASHBOARD.ROOT, label: 'Panel del Spa', icon: LayoutDashboard },
           { href: APP_ROUTES.APPOINTMENTS, label: 'Citas', icon: Calendar },
           { href: APP_ROUTES.SERVICES, label: 'Servicios', icon: Sparkles },
+          { href: APP_ROUTES.SALES, label: 'Ventas', icon: ShoppingBag },
           { href: APP_ROUTES.DASHBOARD.REGISTER_WORKER, label: 'Registrar Trabajadora', icon: UserPlus },
           { href: APP_ROUTES.DASHBOARD.REGISTER_CLIENT, label: 'Registrar Cliente', icon: UserCheck },
           { href: APP_ROUTES.DOCS, label: 'Documentación API', icon: BookOpen },

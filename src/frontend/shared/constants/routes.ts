@@ -18,6 +18,7 @@ export const APP_ROUTES = {
   },
   APPOINTMENTS: '/citas',
   SERVICES: '/servicios',
+  SALES: '/ventas',
   DOCS: '/docs',
 } as const;
 

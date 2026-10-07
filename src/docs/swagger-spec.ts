@@ -46,6 +46,10 @@ export const swaggerSpec = {
       name: 'Citas (Appointments)',
       description: 'Gestión y reserva de citas entre usuarios (Dueño del Spa o Trabajadoras) y Clientes',
     },
+    {
+      name: 'Ventas y Compras (Shopping)',
+      description: 'Gestión y registro de ventas de productos físicos y servicios del spa con paginación',
+    },
   ],
   paths: {
     '/api/auth/register': {
@@ -1565,6 +1569,133 @@ export const swaggerSpec = {
         },
       },
     },
+    '/api/shopping': {
+      get: {
+        tags: ['Ventas y Compras (Shopping)'],
+        summary: 'Listar ventas paginadas de productos y servicios',
+        description: 'Retorna las ventas registradas con soporte de paginación y filtros por tipo (SERVICE, PRODUCT), cliente, trabajadora, fechas y estado.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+          { name: 'itemType', in: 'query', schema: { type: 'string', enum: ['SERVICE', 'PRODUCT'] } },
+          { name: 'clientId', in: 'query', schema: { type: 'string', format: 'uuid' } },
+          { name: 'workerId', in: 'query', schema: { type: 'string', format: 'uuid' } },
+          { name: 'startDate', in: 'query', schema: { type: 'string', format: 'date-time' } },
+          { name: 'endDate', in: 'query', schema: { type: 'string', format: 'date-time' } },
+        ],
+        responses: {
+          200: {
+            description: 'Ventas listadas exitosamente con paginación',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/PaginatedSalesResponse' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ['Ventas y Compras (Shopping)'],
+        summary: 'Registrar una nueva venta de servicio o producto físico',
+        description: 'Registra una venta asociada a un cliente y opcionalmente a una trabajadora, detallando los productos o servicios adquiridos y descontando stock cuando corresponda.',
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateSaleDTO' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Venta registrada exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/SaleResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/shopping/{id}': {
+      get: {
+        tags: ['Ventas y Compras (Shopping)'],
+        summary: 'Consultar detalle de una venta por ID',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        responses: {
+          200: {
+            description: 'Detalle de la venta obtenido exitosamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    data: { $ref: '#/components/schemas/SaleResponseDTO' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/businesses/{id}/shopping': {
+      get: {
+        tags: ['Ventas y Compras (Shopping)'],
+        summary: 'Listar ventas de un negocio',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+        ],
+        responses: {
+          200: {
+            description: 'Ventas del negocio obtenidas exitosamente',
+          },
+        },
+      },
+      post: {
+        tags: ['Ventas y Compras (Shopping)'],
+        summary: 'Registrar venta en el negocio',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateSaleDTO' },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Venta registrada exitosamente',
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -1987,6 +2118,107 @@ export const swaggerSpec = {
           page: { type: 'integer', example: 1 },
           limit: { type: 'integer', example: 10 },
           totalPages: { type: 'integer', example: 5 },
+          hasNextPage: { type: 'boolean', example: true },
+          hasPrevPage: { type: 'boolean', example: false },
+        },
+      },
+      CreateSaleItemDTO: {
+        type: 'object',
+        required: ['itemType', 'itemName', 'unitPrice'],
+        properties: {
+          catalogItemId: { type: 'string', format: 'uuid', nullable: true },
+          itemType: { type: 'string', enum: ['SERVICE', 'PRODUCT'], example: 'SERVICE' },
+          itemName: { type: 'string', example: 'Masaje Relajante Aromaterapia' },
+          quantity: { type: 'integer', default: 1, example: 1 },
+          unitPrice: { type: 'number', example: 85000 },
+        },
+      },
+      CreateSaleDTO: {
+        type: 'object',
+        required: ['businessId', 'clientId'],
+        properties: {
+          businessId: { type: 'string', format: 'uuid' },
+          clientId: { type: 'string', format: 'uuid' },
+          workerId: { type: 'string', format: 'uuid', nullable: true },
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/CreateSaleItemDTO' },
+          },
+          catalogItemId: { type: 'string', format: 'uuid', nullable: true },
+          itemType: { type: 'string', enum: ['SERVICE', 'PRODUCT'] },
+          itemName: { type: 'string' },
+          quantity: { type: 'integer' },
+          unitPrice: { type: 'number' },
+        },
+      },
+      SaleItemResponseDTO: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          catalogItemId: { type: 'string', format: 'uuid', nullable: true },
+          itemType: { type: 'string', enum: ['SERVICE', 'PRODUCT'] },
+          itemName: { type: 'string' },
+          quantity: { type: 'integer' },
+          unitPrice: { type: 'number' },
+          subtotal: { type: 'number' },
+        },
+      },
+      SaleResponseDTO: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          businessId: { type: 'string', format: 'uuid' },
+          clientId: { type: 'string', format: 'uuid' },
+          clientName: { type: 'string', example: 'Valeria Morales' },
+          client: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              firstName: { type: 'string', example: 'Valeria' },
+              lastName: { type: 'string', example: 'Morales' },
+              phone: { type: 'string', example: '+57 312 987 6543' },
+              email: { type: 'string', format: 'email', nullable: true },
+            },
+          },
+          workerId: { type: 'string', format: 'uuid', nullable: true },
+          workerName: { type: 'string', nullable: true, example: 'Mariana Gómez' },
+          worker: {
+            type: 'object',
+            nullable: true,
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              firstName: { type: 'string', example: 'Mariana' },
+              lastName: { type: 'string', example: 'Gómez' },
+              specialty: { type: 'string', nullable: true, example: 'Masoterapeuta' },
+              phone: { type: 'string', nullable: true },
+            },
+          },
+          totalAmount: { type: 'number', example: 125000 },
+          serviceValue: { type: 'number', example: 85000, description: 'Valor del servicio vendido' },
+          serviceAmount: { type: 'number', example: 85000 },
+          productAmount: { type: 'number', example: 40000 },
+          itemType: { type: 'string', enum: ['SERVICE', 'PRODUCT', 'MIXED'], example: 'MIXED' },
+          itemsSummary: { type: 'string', example: 'Masaje Relajante (x1), Crema Hidratante (x1)' },
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/SaleItemResponseDTO' },
+          },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      PaginatedSalesResponse: {
+        type: 'object',
+        properties: {
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/SaleResponseDTO' },
+          },
+          total: { type: 'integer', example: 32 },
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 10 },
+          totalPages: { type: 'integer', example: 4 },
           hasNextPage: { type: 'boolean', example: true },
           hasPrevPage: { type: 'boolean', example: false },
         },

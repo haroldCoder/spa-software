@@ -10,6 +10,7 @@ import {
   Package,
   Scissors,
   Layers,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
@@ -23,6 +24,8 @@ interface SalesHeaderProps {
   userName?: string;
   isCreating: boolean;
   onToggleCreate: () => void;
+  isViewingMetrics?: boolean;
+  onToggleMetrics?: () => void;
 }
 
 export function SalesHeader({
@@ -35,6 +38,8 @@ export function SalesHeader({
   userName,
   isCreating,
   onToggleCreate,
+  isViewingMetrics = false,
+  onToggleMetrics,
 }: SalesHeaderProps) {
   const filterTabs: { value: 'ALL' | 'PRODUCT' | 'SERVICE'; label: string; icon: typeof Layers }[] = [
     { value: 'ALL', label: 'Todas las Ventas', icon: Layers },
@@ -75,13 +80,32 @@ export function SalesHeader({
               size="sm"
               onClick={onRefresh}
               disabled={isRefreshing}
-              className="gap-2"
+              className="gap-2 cursor-pointer"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin')} />
               <span>Actualizar</span>
             </Button>
 
+            {onToggleMetrics && !isCreating && (
+              <Button
+                id="sales-metrics-toggle-button"
+                variant={isViewingMetrics ? 'default' : 'outline'}
+                size="sm"
+                onClick={onToggleMetrics}
+                className={cn(
+                  'gap-2 cursor-pointer transition-all duration-200',
+                  isViewingMetrics
+                    ? 'bg-spa-rose text-white hover:bg-spa-rose/90 shadow-md shadow-spa-rose/25 font-semibold'
+                    : 'border-border/80 hover:border-spa-rose/50 hover:text-spa-rose hover:bg-accent/40'
+                )}
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span>{isViewingMetrics ? 'Ver Tabla' : 'Métricas'}</span>
+              </Button>
+            )}
+
             <Button
+              id="sales-create-product-button"
               size="sm"
               onClick={onToggleCreate}
               className="gap-2 bg-gradient-to-r from-spa-rose to-spa-blush text-white hover:opacity-90 shadow-md shadow-spa-rose/25 cursor-pointer"
@@ -102,8 +126,8 @@ export function SalesHeader({
         </div>
       </div>
 
-      {/* Filter Tabs (Visible when not creating) */}
-      {!isCreating && (
+      {/* Filter Tabs (Visible when not creating and not viewing metrics) */}
+      {!isCreating && !isViewingMetrics && (
         <div className="flex flex-wrap items-center gap-2">
           {filterTabs.map((tab) => {
             const Icon = tab.icon;

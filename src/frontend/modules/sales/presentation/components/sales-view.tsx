@@ -7,6 +7,7 @@ import { useSales } from '../../application/use-sales';
 import { SalesHeader } from './sales-header';
 import { SalesTable } from './sales-table';
 import { CreateSaleForm } from './create-sale-form';
+import { SalesMetricsView } from './sales-metrics-view';
 import { Card } from '@/src/components/ui/card';
 import { Button } from '@/src/components/ui/button';
 import { Lock, LogIn, Loader2, UserPlus, Calendar, LayoutDashboard } from 'lucide-react';
@@ -16,8 +17,9 @@ export function SalesView() {
 
   const isOwner = user?.role === 'BUSINESS_OWNER' || user?.userType === 'BUSINESS';
 
-  // State to toggle between table view and register sale form in the same view
+  // State to toggle between table view, register sale form, and metrics view
   const [isCreating, setIsCreating] = React.useState<boolean>(false);
+  const [isViewingMetrics, setIsViewingMetrics] = React.useState<boolean>(false);
 
   // Filter states
   const [page, setPage] = React.useState<number>(1);
@@ -143,7 +145,15 @@ export function SalesView() {
         onRefresh={() => refetch()}
         userName={user.name}
         isCreating={isCreating}
-        onToggleCreate={() => setIsCreating((prev) => !prev)}
+        onToggleCreate={() => {
+          setIsCreating((prev) => !prev);
+          setIsViewingMetrics(false);
+        }}
+        isViewingMetrics={isViewingMetrics}
+        onToggleMetrics={() => {
+          setIsViewingMetrics((prev) => !prev);
+          setIsCreating(false);
+        }}
       />
 
       {isCreating ? (
@@ -154,6 +164,11 @@ export function SalesView() {
             refetch();
           }}
           onCancel={() => setIsCreating(false)}
+        />
+      ) : isViewingMetrics ? (
+        <SalesMetricsView
+          businessId={user.businessId}
+          onBackToTable={() => setIsViewingMetrics(false)}
         />
       ) : (
         <SalesTable

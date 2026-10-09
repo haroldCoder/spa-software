@@ -1,0 +1,133 @@
+{
+  "conversations": {
+    "573001234567": {
+      "id": "573001234567",
+      "customerName": "Camila Torres",
+      "customerPhone": "573001234567",
+      "lastMessageText": "Hola! Me gustaría consultar por el paquete de spa relajante y limpieza facial profunda para este fin de semana.",
+      "lastMessageAt": "2026-10-09T21:58:44.562Z",
+      "unreadCount": 2,
+      "createdAt": "2026-10-09T21:58:44.565Z",
+      "updatedAt": "2026-10-09T21:58:44.565Z"
+    },
+    "573108889900": {
+      "id": "573108889900",
+      "customerName": "Sofia Ramirez",
+      "customerPhone": "573108889900",
+      "lastMessageText": "Y si tienen citas para el domingo en la mañana por favor",
+      "lastMessageAt": "2026-10-09T21:59:24.236Z",
+      "unreadCount": 0,
+      "createdAt": "2026-10-09T21:59:24.236Z",
+      "updatedAt": "2026-10-09T21:59:57.497Z"
+    },
+    "573204445566": {
+      "id": "573204445566",
+      "customerName": "Carlos Mendoza",
+      "customerPhone": "573204445566",
+      "lastMessageText": "¿Podrían darme información sobre los bonos de regalo para aniversario?",
+      "lastMessageAt": "2026-10-09T21:59:24.236Z",
+      "unreadCount": 2,
+      "createdAt": "2026-10-09T21:59:24.238Z",
+      "updatedAt": "2026-10-09T21:59:24.238Z"
+    },
+    "573152223344": {
+      "id": "573152223344",
+      "customerName": "Mariana Orozco",
+      "customerPhone": "573152223344",
+      "lastMessageText": "Hola Laura, quisiera confirmar si tienes espacio para manicure y pedicure a las 5pm",
+      "lastMessageAt": "2026-10-09T22:06:53.271Z",
+      "unreadCount": 0,
+      "businessId": "spa_aurora_central",
+      "workerId": "worker_laura_01",
+      "createdAt": "2026-10-09T22:06:53.274Z",
+      "updatedAt": "2026-10-09T22:12:29.267Z"
+    }
+  },
+  "messages": [
+    {
+      "id": "msg_573001234567_1791583124_HolaMegustaraco",
+      "conversationId": "573001234567",
+      "senderName": "Camila Torres",
+      "senderPhone": "573001234567",
+      "content": "Hola! Me gustaría consultar por el paquete de spa relajante y limpieza facial profunda para este fin de semana.",
+      "timestamp": "2026-10-09T21:58:44.562Z",
+      "direction": "INBOUND",
+      "status": "DELIVERED",
+      "rawPayload": {
+        "nombre": "Camila Torres",
+        "numero": "+57 300 123 4567",
+        "mensaje": "Hola! Me gustaría consultar por el paquete de spa relajante y limpieza facial profunda para este fin de semana.",
+        "fromMe": false
+      }
+    },
+    {
+      "id": "msg_573108889900_1791583164_Buenastardesqu",
+      "conversationId": "573108889900",
+      "senderName": "Sofia Ramirez",
+      "senderPhone": "573108889900",
+      "content": "Buenas tardes, ¿qué precio tiene el masaje con piedras calientes?",
+      "timestamp": "2026-10-09T21:59:24.234Z",
+      "direction": "INBOUND",
+      "status": "DELIVERED",
+      "rawPayload": {
+        "nombre": "Sofia Ramirez",
+        "numero": "573108889900",
+        "mensaje": "Buenas tardes, ¿qué precio tiene el masaje con piedras calientes?",
+        "fromMe": false
+      }
+    },
+    {
+      "id": "msg_573108889900_1791583164_Ysitienencitaspa",
+      "conversationId": "573108889900",
+      "senderName": "Sofia Ramirez",
+      "senderPhone": "573108889900",
+      "content": "Y si tienen citas para el domingo en la mañana por favor",
+      "timestamp": "2026-10-09T21:59:24.236Z",
+      "direction": "INBOUND",
+      "status": "DELIVERED",
+      "rawPayload": {
+        "nombre": "Sofia Ramirez",
+        "numero": "573108889900",
+        "mensaje": "Y si tienen citas para el domingo en la mañana por favor",
+        "fromMe": false
+      }
+    },
+    {
+      "id": "msg_573204445566_1791583164_Podrandarmeinfor",
+      "conversationId": "573204445566",
+      "senderName": "Carlos Mendoza",
+      "senderPhone": "573204445566",
+      "content": "¿Podrían darme información sobre los bonos de regalo para aniversario?",
+      "timestamp": "2026-10-09T21:59:24.236Z",
+      "direction": "INBOUND",
+      "status": "DELIVERED",
+      "rawPayload": {
+        "nombre": "Carlos Mendoza",
+        "numero": "573204445566",
+        "mensaje": "¿Podrían darme información sobre los bonos de regalo para aniversario?",
+        "fromMe": false
+      }
+    },
+    {
+      "id": "msg_573152223344_1791583613_HolaLauraquisiera",
+      "conversationId": "573152223344",
+      "senderName": "Mariana Orozco",
+      "senderPhone": "573152223344",
+      "content": "Hola Laura, quisiera confirmar si tienes espacio para manicure y pedicure a las 5pm",
+      "timestamp": "2026-10-09T22:06:53.271Z",
+      "direction": "INBOUND",
+      "status": "DELIVERED",
+      "businessId": "spa_aurora_central",
+      "workerId": "worker_laura_01",
+      "rawPayload": {
+        "workerId": "worker_laura_01",
+        "businessId": "spa_aurora_central",
+        "nombre": "Mariana Orozco",
+        "numero": "+57 315 222 3344",
+        "mensaje": "Hola Laura, quisiera confirmar si tienes espacio para manicure y pedicure a las 5pm",
+        "fromMe": false
+      }
+    }
+  ],
+  "lastWebhookReceivedAt": "2026-10-09T22:06:53.287Z"
+}

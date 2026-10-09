@@ -14,6 +14,7 @@ const PUBLIC_API_ROUTES = [
   '/api/auth/worker/login',
   '/api/auth/refresh',
   '/api/openapi',
+  '/api/whatsapp',
 ];
 
 export async function proxy(request: NextRequest) {

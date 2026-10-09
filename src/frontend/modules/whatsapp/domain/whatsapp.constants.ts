@@ -1,6 +1,8 @@
 import { QuickMessageTemplate } from './whatsapp.types';
 
-export const WHATSAPP_POLLING_INTERVAL_MS = 4000;
+// Intervalo de auto-refresco y tiempo de validez de caché (3 minutos)
+export const WHATSAPP_POLLING_INTERVAL_MS = 3 * 60 * 1000;
+export const WHATSAPP_QUERY_STALE_TIME_MS = 3 * 60 * 1000;
 
 export const WHATSAPP_API_ENDPOINTS = {
   CONVERSATIONS: '/api/whatsapp/conversations',

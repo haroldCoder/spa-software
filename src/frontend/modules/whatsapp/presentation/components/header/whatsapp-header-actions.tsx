@@ -62,7 +62,7 @@ export function WhatsAppHeaderActions({
           }`}
       >
         <Radio className={`h-3.5 w-3.5 ${isAutoRefresh ? 'animate-pulse text-emerald-500' : ''}`} />
-        <span>{isAutoRefresh ? 'Sincronización en Vivo' : 'Pausa Sincronización'}</span>
+        <span>{isAutoRefresh ? 'Auto-refresco (3 min)' : 'Pausa Sincronización'}</span>
       </Button>
 
       <Button

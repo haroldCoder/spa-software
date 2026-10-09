@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { WhatsAppConversation, WhatsAppMessage } from '../domain/whatsapp.types';
-import { WHATSAPP_POLLING_INTERVAL_MS } from '../domain/whatsapp.constants';
+import { WHATSAPP_POLLING_INTERVAL_MS, WHATSAPP_QUERY_STALE_TIME_MS } from '../domain/whatsapp.constants';
 import { IWhatsAppApi } from '../infrastructure/whatsapp.api.interface';
 import { whatsAppApi } from '../infrastructure/whatsapp.api';
 
@@ -27,7 +27,8 @@ export function useWhatsAppMessages({
     queryFn: () => (conversationId ? api.getMessages(conversationId) : Promise.resolve([])),
     enabled: Boolean(conversationId),
     refetchInterval: isAutoRefresh && Boolean(conversationId) ? WHATSAPP_POLLING_INTERVAL_MS : false,
-    staleTime: 2000,
+    staleTime: WHATSAPP_QUERY_STALE_TIME_MS,
+    refetchOnWindowFocus: false,
   });
 
   const sendMutation = useMutation<WhatsAppMessage, Error, string>({

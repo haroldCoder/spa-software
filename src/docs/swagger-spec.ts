@@ -50,6 +50,10 @@ export const swaggerSpec = {
       name: 'Ventas y Compras (Shopping)',
       description: 'Gestión y registro de ventas de productos físicos y servicios del spa con paginación',
     },
+    {
+      name: 'Insumos y Útiles (Supplies)',
+      description: 'Gestión de insumos, útiles de cabina, control de stock interno y kardex para el dueño del negocio',
+    },
   ],
   paths: {
     '/api/auth/register': {
@@ -1696,6 +1700,209 @@ export const swaggerSpec = {
         },
       },
     },
+    '/api/supplies': {
+      get: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Listar insumos y útiles del negocio (requiere businessId obligatorio)',
+        description: 'Retorna la lista paginada de insumos y útiles de uso interno del spa. Requiere rol BUSINESS_OWNER y especificar obligatoriamente businessId.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'businessId', in: 'query', required: true, description: 'ID del negocio obligatorio', schema: { type: 'string', format: 'uuid' } },
+          { name: 'itemType', in: 'query', required: false, schema: { type: 'string', enum: ['CONSUMABLE', 'DISPOSABLE', 'TOOL_UTILITY', 'CLEANING_HYGIENE'] } },
+          { name: 'category', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'lowStockOnly', in: 'query', required: false, schema: { type: 'boolean' } },
+          { name: 'isActive', in: 'query', required: false, schema: { type: 'boolean' } },
+          { name: 'search', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 10 } },
+        ],
+        responses: {
+          200: {
+            description: 'Insumos obtenidos exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedSuppliesResponse' } } },
+          },
+          400: { description: 'Parámetro businessId faltante o inválido', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+          403: { description: 'Permisos insuficientes o negocio ajeno', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+      post: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Crear un nuevo insumo o útil',
+        description: 'Registra un insumo consumible, útil o producto de limpieza para el spa. Requiere rol BUSINESS_OWNER.',
+        security: [{ BearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateSupplyDTO' } } },
+        },
+        responses: {
+          201: {
+            description: 'Insumo creado exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/SupplyResponseDTO' } } },
+          },
+          400: { description: 'Datos inválidos', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
+    '/api/supplies/summary': {
+      get: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Resumen financiero y alertas de stock bajo',
+        description: 'Retorna el total de inventario en valor monetario, cantidad de alertas críticas de stock bajo y compras del mes. Requiere businessId.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'businessId', in: 'query', required: true, description: 'ID del negocio obligatorio', schema: { type: 'string', format: 'uuid' } },
+        ],
+        responses: {
+          200: {
+            description: 'Resumen financiero obtenido exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/SuppliesSummaryResponseDTO' } } },
+          },
+          400: { description: 'Parámetro businessId faltante', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiErrorResponse' } } } },
+        },
+      },
+    },
+    '/api/supplies/movements': {
+      get: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Historial de movimientos global del negocio (kardex)',
+        description: 'Retorna todas las compras, consumos en cabina, mermas y ajustes del negocio. Requiere businessId.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'businessId', in: 'query', required: true, description: 'ID del negocio obligatorio', schema: { type: 'string', format: 'uuid' } },
+          { name: 'supplyId', in: 'query', required: false, schema: { type: 'string', format: 'uuid' } },
+          { name: 'movementType', in: 'query', required: false, schema: { type: 'string', enum: ['PURCHASE', 'CONSUMPTION', 'WASTE', 'ADJUSTMENT'] } },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 10 } },
+        ],
+        responses: {
+          200: {
+            description: 'Movimientos obtenidos exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedSupplyMovementsResponse' } } },
+          },
+        },
+      },
+    },
+    '/api/supplies/{id}': {
+      get: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Obtener detalle de un insumo por ID',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        responses: {
+          200: {
+            description: 'Detalle del insumo',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/SupplyResponseDTO' } } },
+          },
+          404: { description: 'Insumo no encontrado' },
+        },
+      },
+      put: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Actualizar insumo o útil',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateSupplyDTO' } } },
+        },
+        responses: {
+          200: {
+            description: 'Insumo actualizado exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/SupplyResponseDTO' } } },
+          },
+        },
+      },
+      delete: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Desactivar insumo (soft-delete)',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        responses: {
+          204: { description: 'Insumo desactivado exitosamente' },
+        },
+      },
+    },
+    '/api/supplies/{id}/movements': {
+      get: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Historial de movimientos de un insumo específico',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'movementType', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 10 } },
+        ],
+        responses: {
+          200: {
+            description: 'Movimientos del insumo obtenidos exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedSupplyMovementsResponse' } } },
+          },
+        },
+      },
+      post: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Registrar movimiento de stock (Compra, Consumo, Merma o Ajuste)',
+        description: 'Registra una entrada (PURCHASE), salida interna (CONSUMPTION), pérdida (WASTE) o ajuste (ADJUSTMENT). Actualiza atómicamente el stock del insumo.',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/RegisterSupplyMovementDTO' } } },
+        },
+        responses: {
+          201: {
+            description: 'Movimiento registrado y stock actualizado exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/SupplyMovementResponseDTO' } } },
+          },
+        },
+      },
+    },
+    '/api/businesses/{id}/supplies': {
+      get: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Listar insumos de un negocio por ID de ruta',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, description: 'ID del negocio', schema: { type: 'string', format: 'uuid' } },
+          { name: 'itemType', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 10 } },
+        ],
+        responses: {
+          200: {
+            description: 'Insumos del negocio obtenidos exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/PaginatedSuppliesResponse' } } },
+          },
+        },
+      },
+      post: {
+        tags: ['Insumos y Útiles (Supplies)'],
+        summary: 'Crear insumo en el negocio por ID de ruta',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, description: 'ID del negocio', schema: { type: 'string', format: 'uuid' } },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateSupplyDTO' } } },
+        },
+        responses: {
+          201: {
+            description: 'Insumo creado exitosamente',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/SupplyResponseDTO' } } },
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -2219,6 +2426,164 @@ export const swaggerSpec = {
           page: { type: 'integer', example: 1 },
           limit: { type: 'integer', example: 10 },
           totalPages: { type: 'integer', example: 4 },
+          hasNextPage: { type: 'boolean', example: true },
+          hasPrevPage: { type: 'boolean', example: false },
+        },
+      },
+      CreateSupplyDTO: {
+        type: 'object',
+        required: ['name'],
+        properties: {
+          businessId: { type: 'string', format: 'uuid', example: 'b0e008cb-312f-48d6-95df-32ef093a8934' },
+          name: { type: 'string', example: 'Aceite Corporal de Almendras 1L' },
+          description: { type: 'string', nullable: true, example: 'Aceite vegetal para masaje corporal relajante' },
+          itemType: { type: 'string', enum: ['CONSUMABLE', 'DISPOSABLE', 'TOOL_UTILITY', 'CLEANING_HYGIENE'], default: 'CONSUMABLE' },
+          category: { type: 'string', nullable: true, example: 'Corporal' },
+          unitMeasure: { type: 'string', enum: ['UNIT', 'ML', 'L', 'GR', 'KG', 'PACK', 'BOX', 'ROLL'], default: 'UNIT' },
+          currentStock: { type: 'number', example: 10, default: 0 },
+          minStockAlert: { type: 'number', example: 3, default: 5 },
+          costPerUnit: { type: 'number', example: 45000, default: 0 },
+          sku: { type: 'string', nullable: true, example: 'INS-ACE-01' },
+          supplierName: { type: 'string', nullable: true, example: 'Distribuidora Cosmética SAS' },
+          supplierContact: { type: 'string', nullable: true, example: '+57 301 987 6543' },
+          isActive: { type: 'boolean', default: true },
+        },
+      },
+      UpdateSupplyDTO: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', example: 'Aceite Corporal de Almendras 1L (Edición Reforzada)' },
+          description: { type: 'string', nullable: true },
+          itemType: { type: 'string', enum: ['CONSUMABLE', 'DISPOSABLE', 'TOOL_UTILITY', 'CLEANING_HYGIENE'] },
+          category: { type: 'string', nullable: true },
+          unitMeasure: { type: 'string', enum: ['UNIT', 'ML', 'L', 'GR', 'KG', 'PACK', 'BOX', 'ROLL'] },
+          minStockAlert: { type: 'number', example: 5 },
+          costPerUnit: { type: 'number', example: 48000 },
+          sku: { type: 'string', nullable: true },
+          supplierName: { type: 'string', nullable: true },
+          supplierContact: { type: 'string', nullable: true },
+          isActive: { type: 'boolean' },
+        },
+      },
+      SupplyResponseDTO: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid', example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' },
+          businessId: { type: 'string', format: 'uuid', example: 'b0e008cb-312f-48d6-95df-32ef093a8934' },
+          name: { type: 'string', example: 'Aceite Corporal de Almendras 1L' },
+          description: { type: 'string', nullable: true },
+          itemType: { type: 'string', example: 'CONSUMABLE' },
+          category: { type: 'string', nullable: true, example: 'Corporal' },
+          unitMeasure: { type: 'string', example: 'L' },
+          currentStock: { type: 'number', example: 12 },
+          minStockAlert: { type: 'number', example: 3 },
+          costPerUnit: { type: 'number', example: 45000 },
+          totalStockValue: { type: 'number', example: 540000 },
+          isLowStock: { type: 'boolean', example: false },
+          sku: { type: 'string', nullable: true, example: 'INS-ACE-01' },
+          supplierName: { type: 'string', nullable: true },
+          supplierContact: { type: 'string', nullable: true },
+          isActive: { type: 'boolean', example: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      RegisterSupplyMovementDTO: {
+        type: 'object',
+        required: ['movementType', 'quantity'],
+        properties: {
+          businessId: { type: 'string', format: 'uuid', description: 'ID del negocio' },
+          supplyId: { type: 'string', format: 'uuid', description: 'ID del insumo' },
+          movementType: { type: 'string', enum: ['PURCHASE', 'CONSUMPTION', 'WASTE', 'ADJUSTMENT'], example: 'PURCHASE' },
+          quantity: { type: 'number', example: 5 },
+          unitCost: { type: 'number', example: 45000, default: 0 },
+          reason: { type: 'string', nullable: true, example: 'Compra de reposición factura #8901' },
+          invoiceNumber: { type: 'string', nullable: true, example: 'FAC-8901' },
+          workerId: { type: 'string', format: 'uuid', nullable: true },
+        },
+      },
+      SupplyMovementResponseDTO: {
+        type: 'object',
+        properties: {
+          movement: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              businessId: { type: 'string', format: 'uuid' },
+              supplyId: { type: 'string', format: 'uuid' },
+              supplyName: { type: 'string', example: 'Aceite Corporal de Almendras 1L' },
+              movementType: { type: 'string', example: 'PURCHASE' },
+              quantity: { type: 'number', example: 5 },
+              previousStock: { type: 'number', example: 10 },
+              newStock: { type: 'number', example: 15 },
+              unitCost: { type: 'number', example: 45000 },
+              totalCost: { type: 'number', example: 225000 },
+              reason: { type: 'string', nullable: true },
+              invoiceNumber: { type: 'string', nullable: true },
+              workerId: { type: 'string', nullable: true },
+              workerName: { type: 'string', nullable: true },
+              createdById: { type: 'string', format: 'uuid' },
+              createdByRole: { type: 'string', example: 'BUSINESS_OWNER' },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+          updatedSupply: { $ref: '#/components/schemas/SupplyResponseDTO' },
+        },
+      },
+      SuppliesSummaryResponseDTO: {
+        type: 'object',
+        properties: {
+          totalSuppliesCount: { type: 'integer', example: 28 },
+          activeSuppliesCount: { type: 'integer', example: 25 },
+          lowStockCount: { type: 'integer', example: 3 },
+          totalInventoryCost: { type: 'number', example: 2850000 },
+          monthlyPurchasesCost: { type: 'number', example: 750000 },
+          monthlyConsumptionsCost: { type: 'number', example: 320000 },
+        },
+      },
+      PaginatedSuppliesResponse: {
+        type: 'object',
+        properties: {
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/SupplyResponseDTO' },
+          },
+          total: { type: 'integer', example: 28 },
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 10 },
+          totalPages: { type: 'integer', example: 3 },
+          hasNextPage: { type: 'boolean', example: true },
+          hasPrevPage: { type: 'boolean', example: false },
+        },
+      },
+      PaginatedSupplyMovementsResponse: {
+        type: 'object',
+        properties: {
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                supplyId: { type: 'string', format: 'uuid' },
+                supplyName: { type: 'string', example: 'Cera Depilatoria Miel 500g' },
+                movementType: { type: 'string', example: 'CONSUMPTION' },
+                quantity: { type: 'number', example: 1 },
+                previousStock: { type: 'number', example: 6 },
+                newStock: { type: 'number', example: 5 },
+                unitCost: { type: 'number', example: 22000 },
+                totalCost: { type: 'number', example: 22000 },
+                reason: { type: 'string', nullable: true },
+                invoiceNumber: { type: 'string', nullable: true },
+                workerName: { type: 'string', nullable: true, example: 'María Gómez' },
+                createdAt: { type: 'string', format: 'date-time' },
+              },
+            },
+          },
+          total: { type: 'integer', example: 15 },
+          page: { type: 'integer', example: 1 },
+          limit: { type: 'integer', example: 10 },
+          totalPages: { type: 'integer', example: 2 },
           hasNextPage: { type: 'boolean', example: true },
           hasPrevPage: { type: 'boolean', example: false },
         },

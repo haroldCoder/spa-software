@@ -19,6 +19,7 @@ export const APP_ROUTES = {
   APPOINTMENTS: '/citas',
   SERVICES: '/servicios',
   SALES: '/ventas',
+  INVERSION: '/inversion',
   DOCS: '/docs',
 } as const;
 

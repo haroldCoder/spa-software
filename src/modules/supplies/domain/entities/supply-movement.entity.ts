@@ -1,6 +1,11 @@
 import { BadRequestError } from '@/src/shared/domain/errors';
 
-export type SupplyMovementType = 'PURCHASE' | 'CONSUMPTION' | 'WASTE' | 'ADJUSTMENT';
+export enum SupplyMovementType {
+  PURCHASE = 'PURCHASE',
+  CONSUMPTION = 'CONSUMPTION',
+  WASTE = 'WASTE',
+  ADJUSTMENT = 'ADJUSTMENT',
+}
 
 export interface SupplyMovementProps {
   id?: string;

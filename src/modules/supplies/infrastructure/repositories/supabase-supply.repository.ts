@@ -5,6 +5,7 @@ import {
   SupplySummaryData,
 } from '../../domain/repositories/supply.repository.interface';
 import { Supply } from '../../domain/entities/supply.entity';
+import { SupplyMovementType } from '../../domain/entities/supply-movement.entity';
 import { SupplyMapper, SupabaseSupplyRow } from '../mappers/supply.mapper';
 import { DatabaseError } from '@/src/shared/domain/errors';
 import { PaginatedResult, PaginationHelper } from '@/src/shared/domain/pagination';
@@ -145,9 +146,9 @@ export class SupabaseSupplyRepository implements ISupplyRepository {
 
     for (const mov of movementsData ?? []) {
       const cost = Number(mov.total_cost) || 0;
-      if (mov.movement_type === 'PURCHASE') {
+      if (mov.movement_type === SupplyMovementType.PURCHASE) {
         monthlyPurchasesCost += cost;
-      } else if (mov.movement_type === 'CONSUMPTION') {
+      } else if (mov.movement_type === SupplyMovementType.CONSUMPTION) {
         monthlyConsumptionsCost += cost;
       }
     }

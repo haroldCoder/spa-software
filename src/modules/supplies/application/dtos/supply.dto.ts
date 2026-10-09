@@ -1,31 +1,16 @@
 import { z } from 'zod';
 import { SupplyItemType, SupplyUnitMeasure } from '../../domain/entities/supply.entity';
 
-export const SupplyItemTypeEnum = z.enum([
-  'CONSUMABLE',
-  'DISPOSABLE',
-  'TOOL_UTILITY',
-  'CLEANING_HYGIENE',
-]);
-
-export const SupplyUnitMeasureEnum = z.enum([
-  'UNIT',
-  'ML',
-  'L',
-  'GR',
-  'KG',
-  'PACK',
-  'BOX',
-  'ROLL',
-]);
+export const SupplyItemTypeEnum = z.nativeEnum(SupplyItemType);
+export const SupplyUnitMeasureEnum = z.nativeEnum(SupplyUnitMeasure);
 
 export const CreateSupplySchema = z.object({
   businessId: z.string().uuid('El ID del negocio debe ser un UUID válido.'),
   name: z.string().min(1, 'El nombre del insumo o útil es obligatorio.').max(255),
   description: z.string().max(1000).optional().nullable(),
-  itemType: SupplyItemTypeEnum.default('CONSUMABLE'),
+  itemType: SupplyItemTypeEnum.default(SupplyItemType.CONSUMABLE),
   category: z.string().max(100).optional().nullable(),
-  unitMeasure: SupplyUnitMeasureEnum.default('UNIT'),
+  unitMeasure: SupplyUnitMeasureEnum.default(SupplyUnitMeasure.UNIT),
   currentStock: z.number().min(0, 'El stock inicial no puede ser negativo.').default(0),
   minStockAlert: z.number().min(0, 'La alerta de stock mínimo no puede ser negativa.').default(5),
   costPerUnit: z.number().min(0, 'El costo unitario no puede ser negativo.').default(0),

@@ -1,7 +1,22 @@
 import { BadRequestError } from '@/src/shared/domain/errors';
 
-export type SupplyItemType = 'CONSUMABLE' | 'DISPOSABLE' | 'TOOL_UTILITY' | 'CLEANING_HYGIENE';
-export type SupplyUnitMeasure = 'UNIT' | 'ML' | 'L' | 'GR' | 'KG' | 'PACK' | 'BOX' | 'ROLL';
+export enum SupplyItemType {
+  CONSUMABLE = 'CONSUMABLE',
+  DISPOSABLE = 'DISPOSABLE',
+  TOOL_UTILITY = 'TOOL_UTILITY',
+  CLEANING_HYGIENE = 'CLEANING_HYGIENE',
+}
+
+export enum SupplyUnitMeasure {
+  UNIT = 'UNIT',
+  ML = 'ML',
+  L = 'L',
+  GR = 'GR',
+  KG = 'KG',
+  PACK = 'PACK',
+  BOX = 'BOX',
+  ROLL = 'ROLL',
+}
 
 export interface SupplyProps {
   id?: string;

@@ -58,6 +58,15 @@ export class HttpClient {
     });
   }
 
+  public static put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PUT',
+      body: isFormData ? (body as FormData) : body ? JSON.stringify(body) : undefined,
+    });
+  }
+
   public static patch<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,

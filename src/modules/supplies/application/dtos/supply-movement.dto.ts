@@ -1,12 +1,7 @@
 import { z } from 'zod';
 import { SupplyMovementType } from '../../domain/entities/supply-movement.entity';
 
-export const SupplyMovementTypeEnum = z.enum([
-  'PURCHASE',
-  'CONSUMPTION',
-  'WASTE',
-  'ADJUSTMENT',
-]);
+export const SupplyMovementTypeEnum = z.nativeEnum(SupplyMovementType);
 
 export const RegisterSupplyMovementSchema = z.object({
   businessId: z.string().uuid('El ID del negocio debe ser un UUID válido.'),

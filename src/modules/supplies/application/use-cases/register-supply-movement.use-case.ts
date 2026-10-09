@@ -2,7 +2,7 @@ import { ISupplyRepository } from '../../domain/repositories/supply.repository.i
 import { ISupplyMovementRepository } from '../../domain/repositories/supply-movement.repository.interface';
 import { RegisterSupplyMovementDTO } from '../dtos/supply-movement.dto';
 import { Supply } from '../../domain/entities/supply.entity';
-import { SupplyMovement } from '../../domain/entities/supply-movement.entity';
+import { SupplyMovement, SupplyMovementType } from '../../domain/entities/supply-movement.entity';
 import { Result } from '@/src/shared/domain/result';
 import { DomainError, ForbiddenError, NotFoundError } from '@/src/shared/domain/errors';
 
@@ -35,16 +35,16 @@ export class RegisterSupplyMovementUseCase {
       const unitCost = dto.unitCost > 0 ? dto.unitCost : supply.costPerUnit;
 
       switch (dto.movementType) {
-        case 'PURCHASE':
+        case SupplyMovementType.PURCHASE:
           supply.increaseStock(dto.quantity, dto.unitCost > 0 ? dto.unitCost : undefined);
           break;
 
-        case 'CONSUMPTION':
-        case 'WASTE':
+        case SupplyMovementType.CONSUMPTION:
+        case SupplyMovementType.WASTE:
           supply.decreaseStock(dto.quantity);
           break;
 
-        case 'ADJUSTMENT':
+        case SupplyMovementType.ADJUSTMENT:
           supply.adjustStock(dto.quantity);
           break;
       }

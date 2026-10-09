@@ -224,3 +224,75 @@ CREATE TRIGGER trigger_sales_updated_at
 BEFORE UPDATE ON sales
 FOR EACH ROW EXECUTE FUNCTION update_timestamp_column();
 
+-- 8. SUPPLIES / INSUMOS Y ÚTILES DEL SPA (Inventario Interno, Herramientas y Consumo de Cabina)
+DO $$ BEGIN
+    CREATE TYPE supply_item_type AS ENUM ('CONSUMABLE', 'DISPOSABLE', 'TOOL_UTILITY', 'CLEANING_HYGIENE');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE supply_unit_measure AS ENUM ('UNIT', 'ML', 'L', 'GR', 'KG', 'PACK', 'BOX', 'ROLL');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE supply_movement_type AS ENUM ('PURCHASE', 'CONSUMPTION', 'WASTE', 'ADJUSTMENT');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+CREATE TABLE IF NOT EXISTS supplies (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    item_type supply_item_type NOT NULL DEFAULT 'CONSUMABLE',
+    category VARCHAR(100),
+    unit_measure supply_unit_measure NOT NULL DEFAULT 'UNIT',
+    current_stock NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    min_stock_alert NUMERIC(12, 2) NOT NULL DEFAULT 5.00,
+    cost_per_unit NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    sku VARCHAR(100),
+    supplier_name VARCHAR(255),
+    supplier_contact VARCHAR(255),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS supply_movements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    supply_id UUID NOT NULL REFERENCES supplies(id) ON DELETE CASCADE,
+    movement_type supply_movement_type NOT NULL,
+    quantity NUMERIC(12, 2) NOT NULL,
+    previous_stock NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    new_stock NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    unit_cost NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    total_cost NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
+    reason TEXT,
+    invoice_number VARCHAR(100),
+    worker_id UUID REFERENCES workers(id) ON DELETE SET NULL,
+    created_by_id UUID NOT NULL,
+    created_by_role VARCHAR(50) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_supplies_business_id ON supplies(business_id);
+CREATE INDEX IF NOT EXISTS idx_supplies_item_type ON supplies(item_type);
+CREATE INDEX IF NOT EXISTS idx_supplies_category ON supplies(category);
+CREATE INDEX IF NOT EXISTS idx_supplies_is_active ON supplies(is_active);
+
+CREATE INDEX IF NOT EXISTS idx_supply_movements_business_id ON supply_movements(business_id);
+CREATE INDEX IF NOT EXISTS idx_supply_movements_supply_id ON supply_movements(supply_id);
+CREATE INDEX IF NOT EXISTS idx_supply_movements_type ON supply_movements(movement_type);
+CREATE INDEX IF NOT EXISTS idx_supply_movements_created_at ON supply_movements(created_at);
+
+DROP TRIGGER IF EXISTS trigger_supplies_updated_at ON supplies;
+CREATE TRIGGER trigger_supplies_updated_at
+BEFORE UPDATE ON supplies
+FOR EACH ROW EXECUTE FUNCTION update_timestamp_column();
+
+

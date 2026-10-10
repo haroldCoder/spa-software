@@ -69,6 +69,7 @@ export interface WebhookProcessResult {
   message: string;
   processedCount: number;
   conversationsUpdated: number;
+  skippedCount?: number;
   businessId?: string;
   workerId?: string;
   details: Array<{
@@ -77,6 +78,10 @@ export interface WebhookProcessResult {
     messagePreview: string;
     businessId?: string;
     workerId?: string;
+  }>;
+  skipped?: Array<{
+    reason: string;
+    itemPreview?: unknown;
   }>;
 }
 
@@ -107,10 +112,17 @@ export class ProcessWhatsAppExtensionWebhookUseCase {
     const conversationsMap = new Map<string, WhatsAppConversation>();
     const messagesToSave: WhatsAppMessage[] = [];
     const details: WebhookProcessResult['details'] = [];
+    const skipped: NonNullable<WebhookProcessResult['skipped']> = [];
 
     for (const raw of items) {
       const extracted = this.extractFields(raw, effectiveContext);
-      if (!extracted) continue;
+      if (!extracted) {
+        skipped.push({
+          reason: 'El elemento recibido no contenía texto o contenido de mensaje válido.',
+          itemPreview: raw,
+        });
+        continue;
+      }
 
       const { phone, name, content, timestamp, direction, messageId, businessId, workerId } = extracted;
 
@@ -174,6 +186,20 @@ export class ProcessWhatsAppExtensionWebhookUseCase {
       });
     }
 
+    if (messagesToSave.length === 0) {
+      return {
+        success: false,
+        message: 'No se pudo procesar ningún mensaje porque los elementos recibidos no contenían texto de mensaje válido.',
+        processedCount: 0,
+        conversationsUpdated: 0,
+        skippedCount: skipped.length,
+        businessId: effectiveContext.businessId,
+        workerId: effectiveContext.workerId,
+        details: [],
+        skipped,
+      };
+    }
+
     // Persist all conversations
     for (const conv of conversationsMap.values()) {
       await this.repository.saveConversation(conv);
@@ -187,9 +213,11 @@ export class ProcessWhatsAppExtensionWebhookUseCase {
       message: `Se procesaron exitosamente ${messagesToSave.length} mensajes en ${conversationsMap.size} conversaciones.`,
       processedCount: messagesToSave.length,
       conversationsUpdated: conversationsMap.size,
+      skippedCount: skipped.length,
       businessId: effectiveContext.businessId,
       workerId: effectiveContext.workerId,
       details,
+      skipped: skipped.length > 0 ? skipped : undefined,
     };
   }
 
@@ -277,29 +305,7 @@ export class ProcessWhatsAppExtensionWebhookUseCase {
     businessId?: string;
     workerId?: string;
   } | null {
-    // 1. Phone number
-    const rawPhone =
-      item.numeroContacto ||
-      item.numero ||
-      item.phone ||
-      item.phoneNumber ||
-      item.customerPhone ||
-      item.senderPhone ||
-      item.jid ||
-      item.chatId ||
-      item.from ||
-      item.to ||
-      '';
-
-    const cleanPhone = String(rawPhone)
-      .replace(/@s\.whatsapp\.net|@c\.us|@g\.us/g, '')
-      .replace(/\D/g, '');
-
-    if (!cleanPhone || cleanPhone.length < 5) {
-      return null;
-    }
-
-    // 2. Message Content (mensaje completo)
+    // 1. Message Content (mensaje completo)
     const rawContent =
       item.mensajeCompleto ||
       item.mensaje ||
@@ -315,7 +321,7 @@ export class ProcessWhatsAppExtensionWebhookUseCase {
       return null;
     }
 
-    // 3. Name (nombre)
+    // 2. Name (nombre)
     const rawName =
       item.nombre ||
       item.name ||
@@ -323,9 +329,46 @@ export class ProcessWhatsAppExtensionWebhookUseCase {
       item.contactName ||
       item.senderName ||
       item.pushname ||
-      cleanPhone;
+      '';
 
-    const name = String(rawName).trim() || cleanPhone;
+    let name = String(rawName).trim();
+
+    // 3. Phone number with intelligent fallback
+    const rawPhone =
+      item.numeroContacto ||
+      item.numero ||
+      item.phone ||
+      item.phoneNumber ||
+      item.customerPhone ||
+      item.senderPhone ||
+      item.jid ||
+      item.chatId ||
+      item.from ||
+      item.to ||
+      '';
+
+    const digitsOnly = String(rawPhone)
+      .replace(/@s\.whatsapp\.net|@c\.us|@g\.us/g, '')
+      .replace(/\D/g, '');
+
+    let phone = digitsOnly;
+    // If not enough phone digits, generate a stable fallback identifier using name or chatId
+    if (!phone || phone.length < 5) {
+      const fallbackChatId = item.chatId || item.jid || item.chatOrigin || item.chatName;
+      if (fallbackChatId && String(fallbackChatId).trim()) {
+        const cleanId = String(fallbackChatId).replace(/@s\.whatsapp\.net|@c\.us|@g\.us/g, '').trim();
+        phone = cleanId.replace(/[^a-zA-Z0-9_-]/g, '_');
+      } else if (name) {
+        const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/^_+|_+$/g, '').slice(0, 35);
+        phone = slug ? `chat_${slug}` : `chat_${Date.now()}`;
+      } else {
+        phone = `chat_${Date.now()}`;
+      }
+    }
+
+    if (!name) {
+      name = phone.startsWith('chat_') ? 'Contacto WhatsApp' : `+${phone}`;
+    }
 
     // 4. Direction
     let direction: MessageDirection = 'INBOUND';
@@ -360,7 +403,7 @@ export class ProcessWhatsAppExtensionWebhookUseCase {
     } else {
       const timeSec = Math.floor(new Date(timestamp).getTime() / 1000);
       const snippet = content.slice(0, 20).replace(/[^a-zA-Z0-9]/g, '');
-      messageId = `msg_${cleanPhone}_${timeSec}_${snippet || Math.random().toString(36).slice(2, 7)}`;
+      messageId = `msg_${phone}_${timeSec}_${snippet || Math.random().toString(36).slice(2, 7)}`;
     }
 
     // 7. WorkerId & BusinessId
@@ -382,7 +425,7 @@ export class ProcessWhatsAppExtensionWebhookUseCase {
       context?.businessId;
 
     return {
-      phone: cleanPhone,
+      phone,
       name,
       content,
       timestamp,

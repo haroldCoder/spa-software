@@ -59,13 +59,14 @@ export async function POST(req: NextRequest) {
       status: 200,
       headers: corsHeaders,
     });
-  } catch (error: any) {
-    console.error('[API WhatsApp Webhook] Error processing incoming payload:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('[API WhatsApp Webhook] Error processing incoming payload:', err);
     return NextResponse.json(
       {
         success: false,
         message: 'Error al procesar los datos del webhook.',
-        error: error?.message || 'Unknown error',
+        error: err?.message || 'Unknown error',
       },
       {
         status: 500,
@@ -86,8 +87,8 @@ export async function GET() {
     return NextResponse.json(
       {
         status: 'online',
-        mode: 'local_file_storage',
-        storagePath: 'data/whatsapp/local-store.json',
+        mode: 'file_storage',
+        storagePath: localWhatsAppRepository.getStoragePath(),
         stats,
         payloadDocumentation: {
           description: 'Envía peticiones POST con JSON al webhook con los siguientes campos:',
@@ -119,9 +120,10 @@ export async function GET() {
         headers: corsHeaders,
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json(
-      { error: error?.message || 'Error getting stats' },
+      { error: err?.message || 'Error getting stats' },
       { status: 500, headers: corsHeaders }
     );
   }
@@ -146,9 +148,10 @@ export async function DELETE() {
         headers: corsHeaders,
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     return NextResponse.json(
-      { success: false, error: error?.message || 'Error clearing data' },
+      { success: false, error: err?.message || 'Error clearing data' },
       { status: 500, headers: corsHeaders }
     );
   }

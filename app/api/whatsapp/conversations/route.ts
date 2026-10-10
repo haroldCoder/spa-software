@@ -29,10 +29,11 @@ export async function GET(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('[API WhatsApp Conversations] Error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('[API WhatsApp Conversations] Error:', err);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Error listing conversations' },
+      { success: false, error: err?.message || 'Error listing conversations' },
       { status: 500 }
     );
   }

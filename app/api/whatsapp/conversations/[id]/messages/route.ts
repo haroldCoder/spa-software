@@ -20,10 +20,11 @@ export async function GET(
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('[API WhatsApp Messages] Error fetching:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('[API WhatsApp Messages] Error fetching:', err);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Error fetching messages' },
+      { success: false, error: err?.message || 'Error fetching messages' },
       { status: 500 }
     );
   }
@@ -58,10 +59,11 @@ export async function POST(
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('[API WhatsApp Messages] Error sending:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('[API WhatsApp Messages] Error sending:', err);
     return NextResponse.json(
-      { success: false, error: error?.message || 'Error sending message' },
+      { success: false, error: err?.message || 'Error sending message' },
       { status: 500 }
     );
   }

@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 import {
   WhatsAppConversation,
   WhatsAppConversationProps,
@@ -22,37 +23,108 @@ interface LocalStoreSchema {
 
 export class LocalFileWhatsAppRepository implements IWhatsAppStorageRepository {
   private readonly filePath: string;
+  private readonly seedFilePath: string;
   private writeLock: Promise<void> = Promise.resolve();
+  // Fallback in-memory storage if disk writes are restricted
+  private inMemoryCache: LocalStoreSchema | null = null;
+  private isReadOnlyFilesystem = false;
 
   constructor(customFilePath?: string) {
-    this.filePath =
-      customFilePath ||
-      path.join(process.cwd(), 'data', 'whatsapp', 'local-store.json');
+    this.seedFilePath = path.join(process.cwd(), 'data', 'whatsapp', 'local-store.json');
+
+    // On Vercel / AWS Lambda / Serverless environments, /var/task is read-only.
+    // The only writable directory is os.tmpdir() (/tmp).
+    const isServerless =
+      Boolean(process.env.VERCEL) ||
+      Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) ||
+      process.cwd().startsWith('/var/task');
+
+    if (customFilePath) {
+      this.filePath = customFilePath;
+    } else if (isServerless) {
+      this.filePath = path.join(os.tmpdir(), 'whatsapp-store.json');
+    } else {
+      this.filePath = this.seedFilePath;
+    }
+  }
+
+  public getStoragePath(): string {
+    return this.filePath;
   }
 
   private async ensureFileExists(): Promise<void> {
+    if (this.isReadOnlyFilesystem) return;
+
     try {
       const dir = path.dirname(this.filePath);
       await fs.mkdir(dir, { recursive: true });
+
       try {
         await fs.access(this.filePath);
       } catch {
-        const initialData: LocalStoreSchema = {
+        // Try to initialize from repository seed data if available
+        let initialData: LocalStoreSchema = {
           conversations: {},
           messages: [],
           lastWebhookReceivedAt: null,
         };
+
+        try {
+          const seedContent = await fs.readFile(this.seedFilePath, 'utf8');
+          const parsed = JSON.parse(seedContent);
+          initialData = {
+            conversations: parsed.conversations || {},
+            messages: Array.isArray(parsed.messages) ? parsed.messages : [],
+            lastWebhookReceivedAt: parsed.lastWebhookReceivedAt || null,
+          };
+        } catch {
+          // No seed or unreadable, start with empty store
+        }
+
         await fs.writeFile(this.filePath, JSON.stringify(initialData, null, 2), 'utf8');
       }
-    } catch (error) {
-      console.error('[LocalFileWhatsAppRepository] Error ensuring store file exists:', error);
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err?.code === 'EROFS' || err?.message?.includes('read-only')) {
+        this.isReadOnlyFilesystem = true;
+      }
+      console.warn('[LocalFileWhatsAppRepository] Warning accessing filesystem storage:', err?.message);
     }
   }
 
   private async readStore(): Promise<LocalStoreSchema> {
+    if (this.inMemoryCache) {
+      return this.inMemoryCache;
+    }
+
+    if (this.isReadOnlyFilesystem) {
+      this.inMemoryCache = await this.readSeedStore();
+      return this.inMemoryCache;
+    }
+
     await this.ensureFileExists();
+
     try {
       const raw = await fs.readFile(this.filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      const store: LocalStoreSchema = {
+        conversations: parsed.conversations || {},
+        messages: Array.isArray(parsed.messages) ? parsed.messages : [],
+        lastWebhookReceivedAt: parsed.lastWebhookReceivedAt || null,
+      };
+      this.inMemoryCache = store;
+      return store;
+    } catch {
+      // Fallback: try reading seed file or initialize empty
+      const store = await this.readSeedStore();
+      this.inMemoryCache = store;
+      return store;
+    }
+  }
+
+  private async readSeedStore(): Promise<LocalStoreSchema> {
+    try {
+      const raw = await fs.readFile(this.seedFilePath, 'utf8');
       const parsed = JSON.parse(raw);
       return {
         conversations: parsed.conversations || {},
@@ -69,22 +141,37 @@ export class LocalFileWhatsAppRepository implements IWhatsAppStorageRepository {
   }
 
   private async writeStore(data: LocalStoreSchema): Promise<void> {
+    // Keep in-memory cache synchronized immediately
+    this.inMemoryCache = data;
+
+    if (this.isReadOnlyFilesystem) {
+      return;
+    }
+
     await this.ensureFileExists();
+
     // Serialize write operations to avoid race conditions
     this.writeLock = this.writeLock.then(async () => {
-      const tempPath = `${this.filePath}.${Date.now()}.tmp`;
+      const tempPath = `${this.filePath}.${Date.now()}.${Math.random().toString(36).slice(2, 6)}.tmp`;
       try {
         await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf8');
         await fs.rename(tempPath, this.filePath);
-      } catch (err) {
+      } catch (error: unknown) {
+        const err = error as { code?: string; message?: string };
+        if (err?.code === 'EROFS' || err?.message?.includes('read-only')) {
+          this.isReadOnlyFilesystem = true;
+          console.warn('[LocalFileWhatsAppRepository] Read-only filesystem detected; operating in memory-safe mode.');
+        } else {
+          console.error('[LocalFileWhatsAppRepository] Error writing store file:', err?.message);
+        }
         try {
           await fs.unlink(tempPath);
         } catch {
-          // ignore
+          // ignore unlink error
         }
-        throw err;
       }
     });
+
     return this.writeLock;
   }
 
@@ -151,7 +238,6 @@ export class LocalFileWhatsAppRepository implements IWhatsAppStorageRepository {
 
   async saveMessage(message: WhatsAppMessage): Promise<void> {
     const store = await this.readStore();
-    // Check if message already exists by id
     const existingIndex = store.messages.findIndex((m) => m.id === message.id);
     if (existingIndex >= 0) {
       store.messages[existingIndex] = message.toJSON();

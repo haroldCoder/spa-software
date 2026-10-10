@@ -65,6 +65,8 @@ export function useWhatsApp(options?: UseWhatsAppOptions) {
     sendMessage,
   } = useWhatsAppMessages({
     selectedConversation,
+    businessId: options?.businessId,
+    workerId: options?.workerId,
     isAutoRefresh,
     api,
   });

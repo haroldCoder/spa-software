@@ -8,6 +8,8 @@ import { whatsAppApi } from '../infrastructure/whatsapp.api';
 
 export interface UseWhatsAppMessagesOptions {
   selectedConversation: WhatsAppConversation | null;
+  businessId?: string;
+  workerId?: string;
   isAutoRefresh?: boolean;
   api?: IWhatsAppApi;
   onMessageSent?: () => Promise<void> | void;
@@ -15,6 +17,8 @@ export interface UseWhatsAppMessagesOptions {
 
 export function useWhatsAppMessages({
   selectedConversation,
+  businessId,
+  workerId,
   isAutoRefresh = false,
   api = whatsAppApi,
   onMessageSent,
@@ -37,8 +41,8 @@ export function useWhatsAppMessages({
       return api.sendMessage({
         conversationId: selectedConversation.id,
         content: content.trim(),
-        businessId: selectedConversation.businessId,
-        workerId: selectedConversation.workerId,
+        businessId: selectedConversation.businessId || businessId,
+        workerId: selectedConversation.workerId || workerId,
       });
     },
     onSuccess: (newMessage) => {

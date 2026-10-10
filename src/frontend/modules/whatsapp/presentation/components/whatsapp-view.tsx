@@ -13,8 +13,16 @@ export function WhatsAppView() {
   const { user } = useCurrentUser();
   const [filterOnlyMine, setFilterOnlyMine] = useState(false);
 
-  const activeWorkerId = filterOnlyMine && user?.userType === 'WORKER' ? user.id : undefined;
-  const activeBusinessId = filterOnlyMine ? user?.businessId : undefined;
+  const isWorker = user?.userType === 'WORKER' || user?.role === 'WORKER';
+
+  // Si está autenticado como colaboradora, consulta exclusivamente sus chats asignados (workerId = user.id)
+  // Si está autenticado como dueña/administradora, consulta por businessId y permite filtrar opcionalmente por worker
+  const activeBusinessId = user?.businessId;
+  const activeWorkerId = isWorker
+    ? user?.id
+    : filterOnlyMine && user?.id
+    ? user.id
+    : undefined;
 
   const {
     conversations,
@@ -51,6 +59,8 @@ export function WhatsAppView() {
       <WhatsAppHeader>
         <WhatsAppHeaderActions
           hasUser={Boolean(user)}
+          isWorker={isWorker}
+          userName={user?.name}
           filterOnlyMine={filterOnlyMine}
           onToggleFilterOnlyMine={() => setFilterOnlyMine((prev) => !prev)}
           isAutoRefresh={isAutoRefresh}

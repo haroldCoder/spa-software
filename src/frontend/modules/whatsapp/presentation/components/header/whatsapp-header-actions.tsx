@@ -6,6 +6,8 @@ import { Badge } from '@/src/components/ui/badge';
 
 interface WhatsAppHeaderActionsProps {
   hasUser: boolean;
+  isWorker?: boolean;
+  userName?: string;
   filterOnlyMine: boolean;
   onToggleFilterOnlyMine: () => void;
   isAutoRefresh: boolean;
@@ -18,6 +20,8 @@ interface WhatsAppHeaderActionsProps {
 
 export function WhatsAppHeaderActions({
   hasUser,
+  isWorker = false,
+  userName,
   filterOnlyMine,
   onToggleFilterOnlyMine,
   isAutoRefresh,
@@ -37,18 +41,30 @@ export function WhatsAppHeaderActions({
         Servidor Local
       </Badge>
 
-      {hasUser && (
+      {hasUser && isWorker && (
+        <Badge
+          variant="outline"
+          className="text-xs gap-1.5 h-9 rounded-xl border-spa-rose/40 bg-spa-rose/10 text-spa-rose py-1 px-3 font-medium"
+          title="Como colaboradora, tienes acceso a tus conversaciones asignadas"
+        >
+          <UserCheck className="h-3.5 w-3.5" />
+          <span>Mis Chats ({userName || 'Colaboradora'})</span>
+        </Badge>
+      )}
+
+      {hasUser && !isWorker && (
         <Button
           variant="outline"
           size="sm"
           onClick={onToggleFilterOnlyMine}
-          className={`text-xs gap-1.5 h-9 rounded-xl transition-all ${filterOnlyMine
+          className={`text-xs gap-1.5 h-9 rounded-xl transition-all ${
+            filterOnlyMine
               ? 'border-spa-rose/40 bg-spa-rose/10 text-spa-rose'
               : 'text-muted-foreground'
-            }`}
+          }`}
         >
           <UserCheck className="h-3.5 w-3.5" />
-          <span>{filterOnlyMine ? 'Mis Chats' : 'Todos los Chats'}</span>
+          <span>{filterOnlyMine ? 'Mis Chats' : 'Todos los Chats del Spa'}</span>
         </Button>
       )}
 

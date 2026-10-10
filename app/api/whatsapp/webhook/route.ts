@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { localWhatsAppRepository } from '@/src/modules/whatsapp/infrastructure/persistence/local-file-whatsapp.repository';
-import { ProcessWhatsAppExtensionWebhookUseCase } from '@/src/modules/whatsapp/application/use-cases/process-whatsapp-extension-webhook.use-case';
-import { ClearLocalWhatsAppUseCase } from '@/src/modules/whatsapp/application/use-cases/clear-local-whatsapp-data.use-case';
+import { getWhatsAppMessageRepository } from '@/src/modules/whatsapp/infrastructure/whatsapp-repository.factory';
+import { SupabaseWhatsAppMessageRepository } from '@/src/modules/whatsapp/infrastructure/repositories/supabase-whatsapp-message.repository';
+import { SaveWhatsAppMessagesUseCase } from '@/src/modules/whatsapp/application/use-cases/save-whatsapp-messages.use-case';
+import { ClearWhatsAppMessagesUseCase } from '@/src/modules/whatsapp/application/use-cases/clear-whatsapp-messages.use-case';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,12 +19,8 @@ export async function OPTIONS() {
 
 /**
  * POST /api/whatsapp/webhook
- * Receives messages/contacts captured by browser extension or test scripts.
- * Supports:
- * - Single item: { nombre: "...", numero: "...", mensaje: "...", workerId: "...", businessId: "..." }
- * - Array: [ { nombre: "...", numero: "...", mensaje: "..." }, ... ]
- * - Object with messages: { businessId: "...", workerId: "...", messages: [...] }
- * - Headers: x-business-id, x-worker-id
+ * Receives messages captured by the browser extension in WhatsApp Web.
+ * Persists directly into whatsapp_messages.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -42,7 +39,8 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-user-id') ||
       undefined;
 
-    const useCase = new ProcessWhatsAppExtensionWebhookUseCase(localWhatsAppRepository);
+    const repo = getWhatsAppMessageRepository();
+    const useCase = new SaveWhatsAppMessagesUseCase(repo);
     const result = await useCase.execute(body, {
       businessId,
       workerId,
@@ -61,7 +59,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: unknown) {
     const err = error as Error;
-    console.error('[API WhatsApp Webhook] Error processing incoming payload:', err);
+    console.error('[API WhatsApp Webhook] Error processing incoming messages:', err);
     return NextResponse.json(
       {
         success: false,
@@ -78,40 +76,33 @@ export async function POST(req: NextRequest) {
 
 /**
  * GET /api/whatsapp/webhook
- * Health check & stats for browser extension configuration.
+ * Health check & stats for browser extension.
  */
 export async function GET() {
   try {
-    const stats = await localWhatsAppRepository.getStats();
+    const repo = getWhatsAppMessageRepository();
+    const stats = await repo.getStats();
+    const isDb = repo instanceof SupabaseWhatsAppMessageRepository;
 
     return NextResponse.json(
       {
         status: 'online',
-        mode: 'file_storage',
-        storagePath: localWhatsAppRepository.getStoragePath(),
+        mode: isDb ? 'database' : 'file_storage',
+        storageTable: 'whatsapp_messages',
         stats,
         payloadDocumentation: {
           description: 'Envía peticiones POST con JSON al webhook con los siguientes campos:',
           requiredFields: {
             nombre: 'Nombre del contacto o remitente (ej: "Camila Torres")',
             numero: 'Número de WhatsApp con indicativo o sin él (ej: "573001234567")',
-            mensaje: 'Texto completo del mensaje capturado (ej: "Hola, deseo agendar...")',
+            mensaje: 'Texto completo del mensaje capturado',
           },
           contextFields: {
-            workerId: 'ID de la trabajadora que ejecuta la extensión (ej: "worker_123" o id del usuario)',
-            businessId: 'ID del negocio / spa (ej: "biz_456")',
+            workerId: 'ID de la trabajadora (ej: UUID de la trabajadora)',
+            businessId: 'ID del spa / negocio (ej: UUID del negocio)',
           },
           optionalFields: {
             timestamp: 'Fecha ISO o Unix timestamp en ms',
-            fromMe: 'true si lo envió el negocio/trabajadora, false si lo envió el cliente',
-          },
-          examplePayload: {
-            nombre: 'Camila Torres',
-            numero: '573001234567',
-            mensaje: 'Hola, deseo agendar un masaje relajante para el viernes a las 3pm',
-            workerId: 'worker_c7f8a9',
-            businessId: 'spa_aura_01',
-            fromMe: false,
           },
         },
       },
@@ -131,17 +122,18 @@ export async function GET() {
 
 /**
  * DELETE /api/whatsapp/webhook
- * Clears local test storage to start fresh.
+ * Clears messages storage.
  */
 export async function DELETE() {
   try {
-    const clearUseCase = new ClearLocalWhatsAppUseCase(localWhatsAppRepository);
+    const repo = getWhatsAppMessageRepository();
+    const clearUseCase = new ClearWhatsAppMessagesUseCase(repo);
     await clearUseCase.execute();
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Almacenamiento local de WhatsApp reiniciado correctamente.',
+        message: 'Mensajes de WhatsApp reiniciados correctamente.',
       },
       {
         status: 200,

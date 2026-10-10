@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { localWhatsAppRepository } from '@/src/modules/whatsapp/infrastructure/persistence/local-file-whatsapp.repository';
-import { GetLocalConversationMessagesUseCase } from '@/src/modules/whatsapp/application/use-cases/get-local-conversation-messages.use-case';
-import { SendLocalReplyUseCase } from '@/src/modules/whatsapp/application/use-cases/send-local-reply.use-case';
+import { getWhatsAppMessageRepository } from '@/src/modules/whatsapp/infrastructure/whatsapp-repository.factory';
+import { ListWhatsAppMessagesUseCase } from '@/src/modules/whatsapp/application/use-cases/list-whatsapp-messages.use-case';
 
 export async function GET(
   _req: NextRequest,
@@ -9,14 +8,21 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const useCase = new GetLocalConversationMessagesUseCase(localWhatsAppRepository);
-    const messages = await useCase.execute(id);
+    const repo = getWhatsAppMessageRepository();
+    const useCase = new ListWhatsAppMessagesUseCase(repo);
+    const result = await useCase.execute({ senderPhone: id });
+
+    // The messages for this contact (chronologically ascending)
+    const matching = result.conversations.find((c) => c.id === id)?.messages ||
+      result.messages.filter((m) => m.senderPhone === id);
+
+    matching.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
     return NextResponse.json(
       {
         success: true,
-        messages,
-        total: messages.length,
+        messages: matching,
+        total: matching.length,
       },
       { status: 200 }
     );
@@ -30,41 +36,12 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await context.params;
-    const body = await req.json();
-
-    if (!body?.content?.trim()) {
-      return NextResponse.json(
-        { success: false, error: 'El contenido del mensaje no puede estar vacío.' },
-        { status: 400 }
-      );
-    }
-
-    const useCase = new SendLocalReplyUseCase(localWhatsAppRepository);
-    const message = await useCase.execute({
-      conversationId: id,
-      content: body.content.trim(),
-      senderName: body.senderName || 'AuraSpa',
-    });
-
-    return NextResponse.json(
-      {
-        success: true,
-        message,
-      },
-      { status: 201 }
-    );
-  } catch (error: unknown) {
-    const err = error as Error;
-    console.error('[API WhatsApp Messages] Error sending:', err);
-    return NextResponse.json(
-      { success: false, error: err?.message || 'Error sending message' },
-      { status: 500 }
-    );
-  }
+export async function POST() {
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'La función de envío está deshabilitada. Los mensajes se reciben exclusivamente desde la extensión.',
+    },
+    { status: 405 }
+  );
 }

@@ -14,6 +14,7 @@ export interface WhatsAppConversation {
   workerId?: string;
   createdAt: string;
   updatedAt: string;
+  messages?: WhatsAppMessage[];
 }
 
 export type WhatsAppMessageDirection = 'INBOUND' | 'OUTBOUND';

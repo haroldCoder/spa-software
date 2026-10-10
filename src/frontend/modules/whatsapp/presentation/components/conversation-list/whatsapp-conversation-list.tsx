@@ -27,9 +27,9 @@ export function WhatsAppConversationList({
   isAutoRefresh,
 }: WhatsAppConversationListProps) {
   return (
-    <Card className="md:col-span-5 lg:col-span-4 flex flex-col h-full bg-card border-border rounded-2xl overflow-hidden shadow-sm">
+    <Card className="md:col-span-5 lg:col-span-4 flex flex-col h-full min-h-0 bg-card border-border rounded-2xl overflow-hidden shadow-sm">
       {/* Search Header */}
-      <div className="p-3.5 border-b border-border bg-card/90 space-y-2">
+      <div className="p-3.5 border-b border-border bg-card/90 space-y-2 shrink-0">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-foreground">
             Chats Capturados ({conversations.length})
@@ -45,33 +45,35 @@ export function WhatsAppConversationList({
       </div>
 
       {/* Conversations ScrollArea */}
-      <ScrollArea className="flex-1">
-        {isLoading && conversations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 text-center text-xs text-muted-foreground">
-            <RefreshCw className="h-5 w-5 animate-spin text-spa-rose mb-2" />
-            <p>Cargando conversaciones...</p>
-          </div>
-        ) : conversations.length === 0 ? (
-          <div className="p-8 text-center text-xs text-muted-foreground space-y-2">
-            <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/30" />
-            <p className="font-semibold text-foreground">No hay mensajes capturados aún</p>
-            <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
-              Asegúrate de que la extensión del navegador esté enviando los datos al webhook o envía una prueba.
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border/50">
-            {conversations.map((conv) => (
-              <WhatsAppConversationItem
-                key={conv.id}
-                conversation={conv}
-                isSelected={selectedConversation?.id === conv.id}
-                onSelect={onSelectConversation}
-              />
-            ))}
-          </div>
-        )}
-      </ScrollArea>
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ScrollArea className="h-full w-full">
+          {isLoading && conversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center text-xs text-muted-foreground">
+              <RefreshCw className="h-5 w-5 animate-spin text-spa-rose mb-2" />
+              <p>Cargando conversaciones...</p>
+            </div>
+          ) : conversations.length === 0 ? (
+            <div className="p-8 text-center text-xs text-muted-foreground space-y-2">
+              <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/30" />
+              <p className="font-semibold text-foreground">No hay mensajes capturados aún</p>
+              <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
+                Asegúrate de que la extensión del navegador esté enviando los datos al webhook o envía una prueba.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border/50">
+              {conversations.map((conv) => (
+                <WhatsAppConversationItem
+                  key={conv.id}
+                  conversation={conv}
+                  isSelected={selectedConversation?.id === conv.id}
+                  onSelect={onSelectConversation}
+                />
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+      </div>
     </Card>
   );
 }

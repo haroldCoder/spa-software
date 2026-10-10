@@ -34,12 +34,10 @@ export function WhatsAppView() {
     setSearchQuery,
     isLoadingConversations,
     isLoadingMessages,
-    isSending,
     isClearing,
     isAutoRefresh,
     setIsAutoRefresh,
     refresh,
-    sendMessage,
     clearAllData,
   } = useWhatsApp({
     businessId: activeBusinessId,
@@ -94,13 +92,11 @@ export function WhatsAppView() {
         />
 
         {/* Right Panel: Chat Window (7-8 columns) */}
-        <div className="md:col-span-7 lg:col-span-8 h-full">
+        <div className="md:col-span-7 lg:col-span-8 h-full min-h-0">
           <WhatsAppChatWindow
             conversation={selectedConversation}
             messages={messages}
             isLoadingMessages={isLoadingMessages}
-            isSending={isSending}
-            onSendMessage={sendMessage}
           />
         </div>
       </div>

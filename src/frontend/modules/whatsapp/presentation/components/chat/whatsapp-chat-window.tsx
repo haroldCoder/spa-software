@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   WhatsAppConversation,
   WhatsAppMessage,
@@ -8,67 +8,39 @@ import {
 import { WhatsAppEmptyChat } from './whatsapp-empty-chat';
 import { WhatsAppChatHeader } from './whatsapp-chat-header';
 import { WhatsAppMessageList } from './whatsapp-message-list';
-import { WhatsAppQuickTemplates } from './whatsapp-quick-templates';
-import { WhatsAppMessageInput } from './whatsapp-message-input';
 
 export interface WhatsAppChatWindowProps {
   conversation: WhatsAppConversation | null;
   messages: WhatsAppMessage[];
   isLoadingMessages: boolean;
-  isSending: boolean;
-  onSendMessage: (text: string) => Promise<void>;
 }
 
 export function WhatsAppChatWindow({
   conversation,
   messages,
   isLoadingMessages,
-  isSending,
-  onSendMessage,
 }: WhatsAppChatWindowProps) {
-  const [inputText, setInputText] = useState('');
-
   if (!conversation) {
     return <WhatsAppEmptyChat />;
   }
 
-  const handleSend = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!inputText.trim() || isSending) return;
-    const text = inputText;
-    setInputText('');
-    await onSendMessage(text);
-  };
-
-  const handleSelectTemplate = (templateText: string) => {
-    setInputText(templateText);
-  };
-
   return (
-    <div className="flex flex-col h-full min-h-[550px] bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-      {/* 1. Header */}
+    <div className="flex flex-col h-full min-h-0 bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+      {/* 1. Header with Contact Info */}
       <WhatsAppChatHeader conversation={conversation} />
 
-      {/* 2. Messages Timeline */}
+      {/* 2. Messages Timeline with ScrollArea */}
       <WhatsAppMessageList
         messages={messages}
         isLoading={isLoadingMessages}
         customerName={conversation.customerName}
       />
 
-      {/* 3. Quick Responses Templates */}
-      <WhatsAppQuickTemplates
-        customerName={conversation.customerName}
-        onSelectTemplate={handleSelectTemplate}
-      />
-
-      {/* 4. Message Input Bar */}
-      <WhatsAppMessageInput
-        value={inputText}
-        onChange={setInputText}
-        onSubmit={handleSend}
-        isSending={isSending}
-      />
+      {/* 3. Read-Only Indicator */}
+      <div className="px-4 py-2 bg-muted/20 border-t border-border/50 text-center text-[11px] text-muted-foreground flex items-center justify-center gap-2 select-none shrink-0">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Recepción activa &middot; Las respuestas se gestionan directamente desde WhatsApp</span>
+      </div>
     </div>
   );
 }

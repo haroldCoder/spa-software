@@ -32,8 +32,7 @@ export interface UseWhatsAppOptions {
 
 /**
  * Facade Hook: useWhatsApp
- * Composes focused sub-hooks (Conversations, Messages, Stats) powered by TanStack Query,
- * providing a unified interface while strictly respecting the Single Responsibility Principle.
+ * Composes focused sub-hooks (Conversations, Messages, Stats) powered by TanStack Query.
  */
 export function useWhatsApp(options?: UseWhatsAppOptions) {
   const api = options?.api || whatsAppApi;
@@ -60,9 +59,7 @@ export function useWhatsApp(options?: UseWhatsAppOptions) {
   const {
     messages,
     isLoadingMessages,
-    isSending,
     refetchMessages,
-    sendMessage,
   } = useWhatsAppMessages({
     selectedConversation,
     businessId: options?.businessId,
@@ -105,13 +102,11 @@ export function useWhatsApp(options?: UseWhatsAppOptions) {
     setSearchQuery,
     isLoadingConversations,
     isLoadingMessages,
-    isSending,
     isClearing,
     isAutoRefresh,
     setIsAutoRefresh,
     lastUpdated,
     refresh,
-    sendMessage,
     clearAllData,
   };
 }
